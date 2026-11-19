@@ -97,6 +97,7 @@
     font-size:12px;font-weight:800;color:#0d1220;background:#ffcf3f;border-radius:11px;padding:5px 12px;
     opacity:0;transition:opacity .15s;white-space:nowrap;box-shadow:0 3px 12px rgba(0,0,0,.3);}
   #stopHint.on{opacity:1;}
+  #stopHint.up{bottom:calc(var(--sab) + 344px);}
 
   /* ---------- controls ---------- */
   .ctrls{position:absolute;left:0;right:0;bottom:0;height:190px;pointer-events:none;}
@@ -118,6 +119,44 @@
   .btn.brake{width:68px;height:68px;font-size:12px;margin-bottom:14px;}
   .btn.horn{position:absolute;right:40px;bottom:calc(var(--sab) + 122px);width:58px;height:58px;font-size:13px;}
   .btn small{font-size:8.5px;font-weight:700;opacity:.72;margin-top:3px;letter-spacing:0;}
+
+  /* ---------- 방향지시등 버튼 ---------- */
+  .cluster.turn{left:14px;bottom:calc(var(--sab) + 96px);gap:7px;}
+  .btn.turn{width:60px;height:38px;border-radius:12px;flex-direction:row;gap:5px;
+    font-size:15px;font-weight:900;color:#c8d3e3;letter-spacing:0;
+    background-color:rgba(15,21,34,.72);border:1px solid rgba(255,255,255,.22);}
+  .btn.turn small{font-size:8px;margin-top:0;opacity:.62;}
+  .btn.turn.on{color:#1c1200;border-color:#ffd98a;animation:turnBlink .96s step-end infinite;}
+  @keyframes turnBlink{
+    0%,44%{background-color:rgba(255,171,0,.96);box-shadow:0 0 18px rgba(255,171,0,.72),inset 0 1px 0 rgba(255,255,255,.5);}
+    45%,100%{background-color:rgba(58,42,14,.86);box-shadow:none;}
+  }
+
+  /* ---------- 전방 신호 배지 ---------- */
+  #sigBadge{position:absolute;left:50%;bottom:calc(var(--sab) + 300px);
+    display:flex;align-items:center;gap:7px;height:33px;padding:0 10px 0 9px;border-radius:17px;
+    background:rgba(10,14,22,.86);border:1.5px solid rgba(255,255,255,.16);
+    box-shadow:0 5px 18px rgba(0,0,0,.46);font-size:12px;font-weight:800;letter-spacing:-.35px;
+    white-space:nowrap;overflow:hidden;pointer-events:none;
+    transform:translateX(-50%) translateY(6px);opacity:0;transition:opacity .16s,transform .16s,border-color .2s,background .2s;}
+  #sigBadge.show{opacity:1;transform:translateX(-50%) translateY(0);}
+  #sigBadge .lamp{width:13px;height:13px;border-radius:50%;flex:none;background:#4a1a15;}
+  #sigBadge .cd{font-variant-numeric:tabular-nums;font-weight:900;font-size:11.5px;padding:1px 6px;border-radius:8px;
+    background:rgba(255,255,255,.14);color:#fff;}
+  #sigBadge.red{border-color:rgba(255,74,54,.9);background:rgba(48,13,11,.92);}
+  #sigBadge.red .lamp{background:#ff3a26;box-shadow:0 0 13px 3px rgba(255,60,40,.85);animation:sigPulse .62s infinite alternate;}
+  #sigBadge.red .cd{background:rgba(255,92,70,.34);color:#ffd9d2;}
+  #sigBadge.yel{border-color:rgba(255,199,0,.85);background:rgba(46,35,4,.92);}
+  #sigBadge.yel .lamp{background:#ffc400;box-shadow:0 0 13px 3px rgba(255,196,0,.8);animation:sigPulse .42s infinite alternate;}
+  #sigBadge.yel .cd{background:rgba(255,196,0,.3);color:#fff0c0;}
+  #sigBadge.grn{border-color:rgba(46,224,112,.85);background:rgba(8,38,22,.92);}
+  #sigBadge.grn .lamp{background:#2ee070;box-shadow:0 0 13px 3px rgba(46,224,112,.8);}
+  #sigBadge.grn .cd{background:rgba(46,224,112,.26);color:#d3ffe4;}
+  @keyframes sigPulse{from{opacity:.5}to{opacity:1}}
+  #sigBadge .bar{position:absolute;left:0;bottom:0;height:3px;width:100%;background:rgba(255,255,255,.55);transform-origin:left;transform:scaleX(1);}
+  #sigBadge.red .bar{background:#ff5a44;}
+  #sigBadge.yel .bar{background:#ffc400;}
+  #sigBadge.grn .bar{background:#2ee070;}
 
   /* ---------- call card ---------- */
   .sheetWrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;
@@ -159,6 +198,7 @@
   .stLine .k{color:#68727f;font-weight:600;}
   .stLine .v{font-weight:800;font-variant-numeric:tabular-nums;}
   .stLine.minus .v{color:#d1362f;}
+  .stLine.zero .v{color:#a8b1bd;}
   .stDash{border-top:1px dashed #cfd4dc;margin:6px 0;}
   .stTotal{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0 4px;}
   .stTotal .k{font-size:13px;font-weight:900;letter-spacing:-.3px;}
@@ -244,6 +284,7 @@
       </div>
     </div>
 
+    <div id="sigBadge"><i class="lamp"></i><span id="sigTx">전방 신호</span><span class="cd" id="sigCd">0초</span><i class="bar" id="sigBar"></i></div>
     <div id="stopHint">정차하면 픽업!</div>
     <div id="toast"></div>
     <div id="warn"></div>
@@ -252,6 +293,10 @@
       <div class="cluster l">
         <button class="btn steer" id="btnLeft">◀<small>좌</small></button>
         <button class="btn steer" id="btnRight">▶<small>우</small></button>
+      </div>
+      <div class="cluster turn">
+        <button class="btn turn" id="btnTurnL">◀<small>깜빡이</small></button>
+        <button class="btn turn" id="btnTurnR">▶<small>깜빡이</small></button>
       </div>
       <div class="cluster r">
         <button class="btn horn" id="btnHorn">빵빵<small>경적</small></button>
@@ -270,11 +315,13 @@
       <div><b>◀ ▶ 좌우</b>핸들을 꺾어 코너를 돌아요</div>
       <div><b>악셀 / 브레이크</b>누르고 있어 가속·감속</div>
       <div><b>빵빵</b>경적을 울려요</div>
-      <div><b>PC</b>WASD·방향키, Space 경적</div>
+      <div><b>◀ ▶ 깜빡이</b>회전 전에 켜면 매너 보너스</div>
+      <div><b>정지선</b>빨간불이면 정지선 앞 정차</div>
+      <div><b>PC</b>WASD 이동 · Q/E 깜빡이 · Space 경적</div>
     </div>
     <div id="startStats"></div>
     <button id="startBtn">배달 시작하기</button>
-    <div class="tip">신호 지키고 음식을 따뜻하게 — 별점이 올라가요</div>
+    <div class="tip">신호 지키고 깜빡이 켜고 음식을 따뜻하게 — 보너스가 올라가요</div>
   </div>
 
   <div id="bootErr"><div><b>3D 엔진을 불러오지 못했어요</b>인터넷 연결을 확인한 뒤 새로고침해 주세요.</div></div>
@@ -333,7 +380,7 @@
     order: null,
     speed: 0, yaw: 0, steer: 0, steerRaw: 0,
     throttle: 0, brake: 0,
-    pos: { x: 34, z: 120 },
+    pos: { x: 36.7, z: 120 },
     food: 100,
     tod: 'day',
     soundOn: true,
@@ -347,6 +394,7 @@
     lastViolation: 0,
     warnUntil: 0,
     pending: null,
+    turn: 0, turnYawAcc: 0, turnAge: 0, mannerAcc: 0, blinkOn: false,
     stats: { money: 0, count: 0, ratingSum: 0 },
     statsSaved: null
   };
@@ -383,6 +431,8 @@
     orderDest: $('#orderDest'), orderDist: $('#orderDist'), foodVal: $('#foodVal'), foodFill: $('#foodFill'),
     navBar: $('#navBar'), navArrow: $('#navArrow'), navName: $('#navName'), navDist: $('#navDist'), mapDist: $('#mapDist'),
     stopHint: $('#stopHint'), toast: $('#toast'), warn: $('#warn'),
+    sigBadge: $('#sigBadge'), sigTx: $('#sigTx'), sigCd: $('#sigCd'), sigBar: $('#sigBar'),
+    btnTurnL: $('#btnTurnL'), btnTurnR: $('#btnTurnR'),
     mini: $('#mini'), muteBtn: $('#muteBtn'),
     btnLeft: $('#btnLeft'), btnRight: $('#btnRight'), btnGas: $('#btnGas'), btnBrake: $('#btnBrake'), btnHorn: $('#btnHorn'),
     callWrap: null, callCard: null, settleWrap: null,
@@ -447,6 +497,22 @@
     call: function () {
       this.blip(880, 0.16, 'sine', 0.2, 0);
       this.blip(1174, 0.2, 'sine', 0.18, 0.15);
+    },
+    /* 방향지시등 릴레이: 딸깍(ON) / 딸깍(OFF) */
+    tick: function (on) {
+      if (!this.ctx || this.muted) return;
+      var ctx = this.ctx, t0 = ctx.currentTime;
+      var f = on ? 2100 : 1650;
+      this.blip(f, 0.030, 'square', 0.045, 0);
+      this.blip(f * 0.62, 0.022, 'triangle', 0.035, 0.004);
+      // 릴레이 접점 잡음
+      var len = Math.floor(ctx.sampleRate * 0.012);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 1800;
+      var g = ctx.createGain(); g.gain.value = 0.10;
+      src.connect(hp); hp.connect(g); g.connect(this.master); src.start(t0);
     },
     pickup: function () {
       this.blip(660, 0.1, 'triangle', 0.2, 0);
@@ -515,7 +581,7 @@
   var streetGlow, streetLampMats = [];
   var carData = [], carBody, carRoof, carHead, carTail;
   var pedData = [], pedBody, pedHead;
-  var signalHeads = [], lampMesh, lampData = [];
+  var signalHeads = [], lampMesh, lampData = [], haloMesh = null, haloData = [], gantryHeads = [];
   var signalPhaseNow = -1;
   var beaconPick, beaconDrop;
   var towerDeckMat, towerTopMat, towerBeaconMat;
@@ -530,9 +596,9 @@
   var lightFade = null;
 
   var LAMP_COL = {
-    redOn: 0xff2d20, redOff: 0x2a0a0b,
-    yelOn: 0xffc400, yelOff: 0x2c2405,
-    grnOn: 0x24e06a, grnOff: 0x06301c
+    redOn: 0xff2a18, redOff: 0x1e0808,
+    yelOn: 0xffc400, yelOff: 0x241f04,
+    grnOn: 0x22f07a, grnOff: 0x04180d
   };
   function lampColor(idx) { return new THREE.Color(idx === 0 ? 0x2a0a0b : (idx === 1 ? 0x2c2405 : 0x06301c)); }
 
@@ -605,6 +671,18 @@
     return t;
   }
 
+  function makeHaloTexture() {
+    var s = 128, c = canvasOf(s, s), x = c.getContext('2d');
+    var g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+    g.addColorStop(0, 'rgba(255,255,255,1)');
+    g.addColorStop(0.22, 'rgba(255,255,255,.72)');
+    g.addColorStop(0.46, 'rgba(255,255,255,.26)');
+    g.addColorStop(0.72, 'rgba(255,255,255,.07)');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    x.fillStyle = g; x.fillRect(0, 0, s, s);
+    return texOf(c);
+  }
+
   function makeGlowTexture() {
     var s = 128, c = canvasOf(s, s), x = c.getContext('2d');
     var g = x.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
@@ -639,9 +717,9 @@
 
   function makeAsphaltTexture() {
     var s = 256, c = canvasOf(s, s), x = c.getContext('2d');
-    x.fillStyle = '#3a3d44'; x.fillRect(0, 0, s, s);
+    x.fillStyle = '#2b2f36'; x.fillRect(0, 0, s, s);
     for (var i = 0; i < 5200; i++) {
-      var v = 40 + Math.random() * 42;
+      var v = 30 + Math.random() * 38;
       x.fillStyle = 'rgba(' + v + ',' + v + ',' + (v + 4) + ',' + (0.12 + Math.random() * 0.2) + ')';
       x.fillRect(Math.random() * s, Math.random() * s, 1 + Math.random() * 2, 1 + Math.random() * 2);
     }
@@ -659,8 +737,8 @@
 
   function makeSidewalkTexture() {
     var s = 256, c = canvasOf(s, s), x = c.getContext('2d');
-    x.fillStyle = '#9aa1a9'; x.fillRect(0, 0, s, s);
-    x.strokeStyle = 'rgba(70,76,84,.45)'; x.lineWidth = 2;
+    x.fillStyle = '#b6bdc5'; x.fillRect(0, 0, s, s);
+    x.strokeStyle = 'rgba(74,80,88,.45)'; x.lineWidth = 2;
     for (var i = 0; i <= 8; i++) {
       var p = i * s / 8;
       x.beginPath(); x.moveTo(p, 0); x.lineTo(p, s); x.stroke();
@@ -780,79 +858,94 @@
   }
 
   /* --- 차선 표시 --- */
+  var laneStats = { y: 0, w: 0, s: 0, c: 0 };
   function makeLaneMarks() {
-    var dashGeo = new THREE.PlaneGeometry(1, 1);
-    dashGeo.rotateX(-Math.PI / 2);
-    var yellow = new THREE.MeshBasicMaterial({ color: 0xe8c53a });
-    var white = new THREE.MeshBasicMaterial({ color: 0xe9edf2 });
-    laneMatY = yellow; laneMatW = white;
-    var yCount = 0, wCount = 0;
-    var i, k, rx;
-    for (i = 0; i < ROADS.length; i++) { yCount += Math.floor(EDGE * 2 / 9) + 1; wCount += 2 * (Math.floor(EDGE * 2 / 7) + 1); }
-    for (i = 0; i < ROADS.length; i++) {
-      yCount += Math.floor(EDGE * 2 / 9) + 1;
-      wCount += 2 * (Math.floor(EDGE * 2 / 7) + 1);
-    }
-    var yMesh = new THREE.InstancedMesh(dashGeo, yellow, yCount);
-    var wMesh = new THREE.InstancedMesh(dashGeo, white, wCount);
-    var m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
-    var e = new THREE.Euler();
-    var yi = 0, wi = 0;
-    function addDash(mesh, idx, x, z, w, h, rotY) {
-      p.set(x, 0.035, z); e.set(0, rotY, 0); q.setFromEuler(e); s.set(w, 1, h);
-      m.compose(p, q, s); mesh.setMatrixAt(idx, m);
-    }
-    for (k = 0; k < ROADS.length; k++) {
-      rx = ROADS[k];
-      // 남북 도로 (x=rx): 중앙선 + 차선
-      for (var z = -EDGE + 4; z < EDGE; z += 9) addDash(yMesh, yi++, rx, z, 0.34, 4.2, 0);
-      for (var z2 = -EDGE + 3; z2 < EDGE; z2 += 7) {
-        addDash(wMesh, wi++, rx - 5.5, z2, 0.22, 2.6, 0);
-        addDash(wMesh, wi++, rx + 5.5, z2, 0.22, 2.6, 0);
-      }
-      // 동서 도로 (z=rx)
-      for (var x = -EDGE + 4; x < EDGE; x += 9) addDash(yMesh, yi++, x, rx, 4.2, 0.34, 0);
-      for (var x2 = -EDGE + 3; x2 < EDGE; x2 += 7) {
-        addDash(wMesh, wi++, x2, rx - 5.5, 2.6, 0.22, 0);
-        addDash(wMesh, wi++, x2, rx + 5.5, 2.6, 0.22, 0);
-      }
-    }
-    yMesh.count = yi; wMesh.count = wi;
-    yMesh.instanceMatrix.needsUpdate = true; wMesh.instanceMatrix.needsUpdate = true;
-    scene.add(yMesh); scene.add(wMesh);
+    var Y = [], W = [], S = [], C = [];   // 중앙선 / 점선 / 실선·정지선 / 횡단보도
 
-    // 횡단보도 + 정지선
-    var stripGeo = new THREE.PlaneGeometry(1, 1); stripGeo.rotateX(-Math.PI / 2);
-    var cwCount = 0;
-    for (var a = 0; a < ROADS.length; a++) for (var b = 0; b < ROADS.length; b++) cwCount += 4 * 8 + 4;
-    var cwMat = new THREE.MeshBasicMaterial({ color: 0xe4e9ef });
-    laneMatC = cwMat;
-    var cwMesh = new THREE.InstancedMesh(stripGeo, cwMat, cwCount);
-    var ci = 0;
-    for (var ai = 0; ai < ROADS.length; ai++) {
-      for (var bi = 0; bi < ROADS.length; bi++) {
-        var cx = ROADS[ai], cz = ROADS[bi];
-        // 네 방향 횡단보도 (줄무늬)
-        for (var side = 0; side < 4; side++) {
-          var horiz = side < 2;
-          var sign = side % 2 === 0 ? -1 : 1;
-          for (var t = 0; t < 8; t++) {
-            var off = -7.7 + t * 2.2;
-            if (horiz) {
-              p.set(cx + off, 0.04, cz + sign * 12.6); e.set(0, 0, 0); q.setFromEuler(e);
-              s.set(1.05, 1, 3.6);
-            } else {
-              p.set(cx + sign * 12.6, 0.04, cz + off); e.set(0, 0, 0); q.setFromEuler(e);
-              s.set(3.6, 1, 1.05);
-            }
-            m.compose(p, q, s); cwMesh.setMatrixAt(ci++, m);
-          }
+    // 교차로(횡단보도) 구간을 비운 주행 구간
+    var zs = ROADS.slice().sort(function (a, b) { return a - b; });
+    var spans = [], prev = -EDGE + 2;
+    for (var q = 0; q < zs.length; q++) {
+      var a0 = zs[q] - 16.2, b0 = zs[q] + 16.2;
+      if (a0 > prev + 2) spans.push([prev, a0]);
+      prev = b0;
+    }
+    if (EDGE - 2 > prev + 2) spans.push([prev, EDGE - 2]);
+
+    for (var r = 0; r < ROADS.length; r++) {
+      var rx = ROADS[r];
+      for (var t = 0; t < spans.length; t++) {
+        var s0 = spans[t][0], s1 = spans[t][1], mid = (s0 + s1) / 2, len = s1 - s0;
+        if (len < 3) continue;
+        // 남북 도로 (x = rx): 이중 황색 중앙선 + 백색 점선 + 백색 외곽 실선
+        Y.push([rx - 0.20, mid, 0.16, len]);
+        Y.push([rx + 0.20, mid, 0.16, len]);
+        S.push([rx - 10.15, mid, 0.22, len]);
+        S.push([rx + 10.15, mid, 0.22, len]);
+        for (var d = s0 + 1.2; d + 3.6 <= s1; d += 8.0) {
+          W.push([rx - 5.4, d + 1.8, 0.28, 3.6]);
+          W.push([rx + 5.4, d + 1.8, 0.28, 3.6]);
+        }
+        // 동서 도로 (z = rx)
+        Y.push([mid, rx - 0.20, len, 0.16]);
+        Y.push([mid, rx + 0.20, len, 0.16]);
+        S.push([mid, rx - 10.15, len, 0.22]);
+        S.push([mid, rx + 10.15, len, 0.22]);
+        for (var d2 = s0 + 1.2; d2 + 3.6 <= s1; d2 += 8.0) {
+          W.push([d2 + 1.8, rx - 5.4, 3.6, 0.28]);
+          W.push([d2 + 1.8, rx + 5.4, 3.6, 0.28]);
         }
       }
     }
-    cwMesh.count = ci;
-    cwMesh.instanceMatrix.needsUpdate = true;
-    scene.add(cwMesh);
+
+    // 교차로: 횡단보도 + 진입 차로 정지선
+    for (var ai = 0; ai < ROADS.length; ai++) {
+      for (var bi = 0; bi < ROADS.length; bi++) {
+        var cx = ROADS[ai], cz = ROADS[bi];
+        for (var side = 0; side < 4; side++) {
+          var horiz = side < 2;
+          var sgn = side % 2 === 0 ? -1 : 1;
+          for (var n = 0; n < 9; n++) {
+            var off = -8.8 + n * 2.2;
+            if (horiz) C.push([cx + off, cz + sgn * 13.6, 1.20, 3.8]);
+            else C.push([cx + sgn * 13.6, cz + off, 3.8, 1.20]);
+          }
+        }
+        // 정지선 (진입 방향 오른쪽 차로 폭)
+        S.push([cx + 5.7, cz + 16.7, 9.6, 0.95]);   // 북행 진입
+        S.push([cx - 5.7, cz - 16.7, 9.6, 0.95]);   // 남행 진입
+        S.push([cx - 16.7, cz + 5.7, 0.95, 9.6]);   // 동행 진입
+        S.push([cx + 16.7, cz - 5.7, 0.95, 9.6]);   // 서행 진입
+      }
+    }
+
+    var geo = new THREE.PlaneGeometry(1, 1);
+    geo.rotateX(-Math.PI / 2);
+    function mkMat(hex) {
+      return new THREE.MeshBasicMaterial({
+        color: hex, toneMapped: false,
+        polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4
+      });
+    }
+    var yMat = mkMat(0xffd21f), wMat = mkMat(0xf4f8ff), sMat = mkMat(0xf7fafd), cMat = mkMat(0xf2f6fa);
+    laneMatY = yMat; laneMatW = wMat; laneMatC = cMat;
+
+    var mm = new THREE.Matrix4(), qq = new THREE.Quaternion(), pp = new THREE.Vector3(), ss = new THREE.Vector3();
+    function build(arr, mat) {
+      var mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, arr.length));
+      for (var i = 0; i < arr.length; i++) {
+        pp.set(arr[i][0], 0.055, arr[i][1]); qq.identity(); ss.set(arr[i][2], 1, arr[i][3]);
+        mm.compose(pp, qq, ss);
+        mesh.setMatrixAt(i, mm);
+      }
+      mesh.count = arr.length;
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.frustumCulled = false;
+      scene.add(mesh);
+      return mesh;
+    }
+    build(Y, yMat); build(W, wMat); build(S, sMat); build(C, cMat);
+    laneStats.y = Y.length; laneStats.w = W.length; laneStats.s = S.length; laneStats.c = C.length;
   }
 
   /* --- 블록/건물 --- */
@@ -863,7 +956,7 @@
   function makeCityBlocks() {
     var sideTex = makeSidewalkTexture();
     var sideMat = new THREE.MeshLambertMaterial({ map: sideTex, color: 0xffffff });
-    var curbMat = new THREE.MeshLambertMaterial({ color: 0x646b74 });
+    var curbMat = new THREE.MeshLambertMaterial({ color: 0x343a42 });
 
     for (var bi = -GRID; bi <= GRID; bi++) {
       for (var bj = -GRID; bj <= GRID; bj++) {
@@ -871,8 +964,8 @@
         var plat = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2, CURB_H, HALF * 2), sideMat);
         plat.position.set(bx, CURB_H / 2, bz);
         scene.add(plat);
-        var curb = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2 + 0.5, 0.10, HALF * 2 + 0.5), curbMat);
-        curb.position.set(bx, 0.03, bz);
+        var curb = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2 + 0.5, 0.18, HALF * 2 + 0.5), curbMat);
+        curb.position.set(bx, 0.09, bz);
         scene.add(curb);
 
         solidRects.push({ x: bx, z: bz, hw: HALF + 0.25, hd: HALF + 0.25 });
@@ -1119,59 +1212,113 @@
   }
 
 
-  /* --- 신호등 --- */
+  /* --- 신호등 (차도 위 오버헤드 갠트리) --- */
+  var SIG_GREEN = 6.4, SIG_YELLOW = 1.4, SIG_CYCLE = (SIG_GREEN + SIG_YELLOW) * 2;
+
   function makeTrafficLights() {
     var inter = [];
-    [-34, 34, 102].forEach(function (x) { [-34, 34, 102].forEach(function (z) { inter.push([x, z]); }); });
+    ROADS.forEach(function (x) { ROADS.forEach(function (z) { inter.push([x, z]); }); });
     interList = inter;
     G.inters = inter;
-    var poleGeo = new THREE.CylinderGeometry(0.13, 0.15, 6.2, 8);
-    var poleMat = new THREE.MeshLambertMaterial({ color: 0x2c313a });
-    var housingGeo = new THREE.BoxGeometry(0.46, 1.45, 0.22);
-    var housingMat = new THREE.MeshLambertMaterial({ color: 0x1e232b });
-    var lampGeo = new THREE.SphereGeometry(0.21, 10, 8);
-    var headDefs = [
-      { dx: -12.6, dz: 12.6, ry: 0, axis: 0 },        // 남쪽에서 오는 북향 차량
-      { dx: 12.6, dz: -12.6, ry: Math.PI, axis: 0 },
-      { dx: 12.6, dz: 12.6, ry: Math.PI / 2, axis: 1 }, // 동쪽에서 오는 서향
-      { dx: -12.6, dz: -12.6, ry: -Math.PI / 2, axis: 1 }
+    gantryHeads.length = 0; lampData.length = 0; haloData.length = 0; signalHeads.length = 0;
+
+    var N = inter.length;
+    var poleGeo = new THREE.CylinderGeometry(0.15, 0.19, 7.1, 10);
+    var poleMat = new THREE.MeshLambertMaterial({ color: 0x343a43 });
+    var armGeo = new THREE.BoxGeometry(1, 0.20, 0.20);
+    var houseGeo = new THREE.BoxGeometry(4.30, 1.24, 0.38);
+    var houseMat = new THREE.MeshLambertMaterial({ color: 0x3a414a, emissive: 0x0c0e12 });
+    var plateGeo = new THREE.BoxGeometry(4.78, 1.62, 0.08);
+    var plateMat = new THREE.MeshLambertMaterial({ color: 0x22282f, emissive: 0x080a0d });
+    var lampGeo = new THREE.SphereGeometry(0.40, 10, 8);
+    var lampMat = new THREE.MeshBasicMaterial({ toneMapped: false });
+    var haloGeo = new THREE.PlaneGeometry(3.15, 3.15);
+    var haloMat = new THREE.MeshBasicMaterial({
+      map: makeHaloTexture(), transparent: true, opacity: 0.85, depthWrite: false,
+      blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide
+    });
+
+    var poles = new THREE.InstancedMesh(poleGeo, poleMat, N * 4);
+    var arms = new THREE.InstancedMesh(armGeo, poleMat, N * 4);
+    var houses = new THREE.InstancedMesh(houseGeo, houseMat, N * 4);
+    var plates = new THREE.InstancedMesh(plateGeo, plateMat, N * 4);
+    lampMesh = new THREE.InstancedMesh(lampGeo, lampMat, N * 12);
+    haloMesh = new THREE.InstancedMesh(haloGeo, haloMat, N * 12);
+
+    var m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+    var p = new THREE.Vector3(), sc = new THREE.Vector3();
+    function put(mesh, i, x, y, z, ry, sx, sy, sz) {
+      p.set(x, y, z); e.set(0, ry, 0); q.setFromEuler(e); sc.set(sx || 1, sy || 1, sz || 1);
+      m.compose(p, q, sc); mesh.setMatrixAt(i, m);
+    }
+
+    // 진입 방향별 신호등: 기둥은 건너편 오른쪽 보도, 머리는 진입 차로 위 (한국식 원거리 신호)
+    var APPR = [
+      { axis: 0, dir: [0, -1], ry: 0, pole: [12.6, -13.6], head: [3.9, -13.6] },   // 북행 (주행 -z)
+      { axis: 0, dir: [0, 1], ry: Math.PI, pole: [-12.6, 13.6], head: [-3.9, 13.6] },  // 남행 (+z)
+      { axis: 1, dir: [1, 0], ry: -Math.PI / 2, pole: [-13.6, 12.6], head: [-13.6, 3.9] }, // 동행 (+x)
+      { axis: 1, dir: [-1, 0], ry: Math.PI / 2, pole: [13.6, -12.6], head: [13.6, -3.9] }  // 서행 (-x)
     ];
-    var poles = new THREE.InstancedMesh(poleGeo, poleMat, inter.length * 4);
-    var housings = new THREE.InstancedMesh(housingGeo, housingMat, inter.length * 4);
-    lampMesh = new THREE.InstancedMesh(lampGeo, new THREE.MeshBasicMaterial({ toneMapped: false }), inter.length * 12);
-    var m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), p = new THREE.Vector3(), s = new THREE.Vector3(1, 1, 1);
-    var pi = 0, hi = 0, li = 0;
+    var HEAD_Y = 6.02, ARM_Y = 6.68, POLE_H = 7.1;
+
+    var pi = 0, ai = 0, hi = 0, pli = 0, li = 0;
     for (var i = 0; i < inter.length; i++) {
       var ix = inter[i][0], iz = inter[i][1];
-      for (var hd = 0; hd < 4; hd++) {
-        var h = headDefs[hd];
-        var px = ix + h.dx, pz = iz + h.dz;
-        p.set(px, CURB_H + 3.1, pz); e.set(0, 0, 0); q.setFromEuler(e);
-        m.compose(p, q, s); poles.setMatrixAt(pi++, m);
+      for (var a = 0; a < 4; a++) {
+        var A = APPR[a];
+        var poleX = ix + A.pole[0], poleZ = iz + A.pole[1];
+        var headX = ix + A.head[0], headZ = iz + A.head[1];
+        var fx = Math.sin(A.ry), fz = Math.cos(A.ry);   // 하우징이 바라보는 방향
 
-        var hx = px + Math.sin(h.ry) * 0.1, hz = pz + Math.cos(h.ry) * 0.1;
-        p.set(hx, 5.35, hz); e.set(0, h.ry, 0); q.setFromEuler(e);
-        m.compose(p, q, s); housings.setMatrixAt(hi++, m);
+        // 기둥
+        put(poles, pi++, poleX, CURB_H + POLE_H / 2, poleZ, 0, 1, 1, 1);
+        // 암대: 기둥 → 머리 위
+        var adx = headX - poleX, adz = headZ - poleZ;
+        var alen = Math.sqrt(adx * adx + adz * adz) + 0.5;
+        var ary = Math.atan2(-adz, adx);
+        put(arms, ai++, (poleX + headX) / 2, ARM_Y, (poleZ + headZ) / 2, ary, alen, 1, 1);
+        // 후면 판 + 하우징
+        put(plates, pli++, headX - fx * 0.20, HEAD_Y, headZ - fz * 0.20, A.ry, 1, 1, 1);
+        put(houses, hi++, headX, HEAD_Y, headZ, A.ry, 1, 1, 1);
 
-        signalHeads.push({ axis: h.axis });
-        var baseY = 5.35 + 0.46;
         for (var l = 0; l < 3; l++) {
-          var ly = baseY - l * 0.44;
-          var ox = Math.sin(h.ry) * 0.19, oz = Math.cos(h.ry) * 0.19;
-          p.set(hx + ox, ly, hz + oz); e.set(0, 0, 0); q.setFromEuler(e);
-          m.compose(p, q, s); lampMesh.setMatrixAt(li, m);
-          lampData.push({ idx: li, axis: h.axis, col: l }); // 0 red 1 yellow 2 green
+          var ox = (l - 1) * 1.26;
+          var bx2 = headX + Math.cos(A.ry) * ox, bz2 = headZ - Math.sin(A.ry) * ox;
+          // 램프 (하우징 앞면으로 돌출)
+          put(lampMesh, li, bx2 + fx * 0.245, HEAD_Y, bz2 + fz * 0.245, 0, 1, 1, 1);
           lampMesh.setColorAt(li, lampColor(0));
+          lampData.push({ idx: li, axis: A.axis, col: l });
+          signalHeads.push({ axis: A.axis });
+          // 발광 헤일로
+          put(haloMesh, li, bx2 + fx * 0.66, HEAD_Y, bz2 + fz * 0.66, A.ry, 1, 1, 1);
+          haloMesh.setColorAt(li, new THREE.Color(0x000000));
+          haloData.push({ idx: li, axis: A.axis, col: l });
           li++;
         }
+        gantryHeads.push({
+          ix: ix, iz: iz, axis: A.axis, ry: A.ry,
+          head: { x: headX, y: HEAD_Y, z: headZ },
+          face: { x: fx, z: fz }, dir: { x: A.dir[0], z: A.dir[1] },
+          lateral: A.axis === 0 ? A.head[0] : A.head[1]
+        });
       }
     }
+    poles.count = pi; arms.count = ai; houses.count = hi; plates.count = pli;
     poles.instanceMatrix.needsUpdate = true;
-    housings.instanceMatrix.needsUpdate = true;
+    arms.instanceMatrix.needsUpdate = true;
+    houses.instanceMatrix.needsUpdate = true;
+    plates.instanceMatrix.needsUpdate = true;
     lampMesh.instanceMatrix.needsUpdate = true;
-    lampMesh.instanceColor.needsUpdate = true;
+    haloMesh.instanceMatrix.needsUpdate = true;
+    if (lampMesh.instanceColor) lampMesh.instanceColor.needsUpdate = true;
+    if (haloMesh.instanceColor) haloMesh.instanceColor.needsUpdate = true;
     lampMesh.frustumCulled = false;
-    scene.add(poles); scene.add(housings); scene.add(lampMesh);
+    haloMesh.frustumCulled = false;
+    poles.frustumCulled = false; arms.frustumCulled = false;
+    houses.frustumCulled = false; plates.frustumCulled = false;
+    scene.add(poles); scene.add(arms); scene.add(houses); scene.add(plates);
+    scene.add(lampMesh); scene.add(haloMesh);
+    signalPhaseNow = -1;
   }
 
   /* --- 가로수 & 가로등 --- */
@@ -1495,10 +1642,11 @@
       var plate = boxAt(barG, 0.090, 0.050, 0.016, mBody, sd * 0.258, 0.262, 0.002);
       plate.rotation.y = sd * 0.24;
       var glass = new THREE.Mesh(new THREE.PlaneGeometry(0.076, 0.038),
-        new THREE.MeshBasicMaterial({ color: 0x5d748c }));
+        new THREE.MeshBasicMaterial({ color: 0x556270, toneMapped: false }));
       glass.position.set(sd * 0.259, 0.262, 0.012);
       glass.rotation.y = sd * 0.24;
       barG.add(glass);
+      if (sd < 0) G.mirL = glass; else G.mirR = glass;
     });
 
     // 대시보드
@@ -1604,9 +1752,9 @@
     if (streetGlow) streetGlow.material.opacity = c.glow;
     if (streetLampMats[0]) streetLampMats[0].color.setScalar(0.55 + c.glow * 0.65);
     if (towerDeckMat) towerDeckMat.color.setHex(name === 'night' ? 0xdff0ff : (name === 'sunset' ? 0xffd9b0 : 0xdfe7ee));
-    if (laneMatY) laneMatY.color.setHex(name === 'night' ? 0x9b8a3a : (name === 'sunset' ? 0xe9a94e : 0xe8c53a));
-    if (laneMatW) laneMatW.color.setHex(name === 'night' ? 0x8d99a8 : (name === 'sunset' ? 0xffdcb4 : 0xe9edf2));
-    if (laneMatC) laneMatC.color.setHex(name === 'night' ? 0x93a0b0 : (name === 'sunset' ? 0xffe3c2 : 0xe4e9ef));
+    if (laneMatY) laneMatY.color.setHex(name === 'night' ? 0xffd22e : (name === 'sunset' ? 0xffc83c : 0xffd21f));
+    if (laneMatW) laneMatW.color.setHex(name === 'night' ? 0xe8f0ff : (name === 'sunset' ? 0xfff1dc : 0xf4f8ff));
+    if (laneMatC) laneMatC.color.setHex(name === 'night' ? 0xe4ecf7 : (name === 'sunset' ? 0xfff3e2 : 0xf2f6fa));
     if (headlight) headlight.intensity = name === 'night' ? 5 : (name === 'sunset' ? 0.35 : 0.08);
     if (towerTopMat) towerTopMat.color.setHex(name === 'night' ? 0x8fe0ff : 0x9fd8ff);
     if (G.towerGroup) {
@@ -1676,7 +1824,8 @@
     } while ((dist < 150 || dist > 700) && tries < 40);
     if (dist < 120) dist = 120;
     var fee = 2500 + Math.round(dist * 2.3 / 100) * 100;
-    var limit = Math.round(50 + dist / 7.2);
+    // 신호 대기·교차로 감속 시간을 넉넉히 포함한 제한시간
+    var limit = Math.round(72 + dist / 6.5);
     G.pending = {
       store: store, dest: dest, dist: dist, fee: fee, limit: limit,
       timeLeft: limit, violations: 0, collisions: 0, food: 100, late: false,
@@ -1693,7 +1842,7 @@
     $('#ccMenu').textContent = o.store.menu;
     $('#ccDest').textContent = o.destLabel;
     $('#ccDist').textContent = Math.round(o.dist) + 'm';
-    $('#ccDistSub').textContent = '약 ' + Math.max(1, Math.round(o.dist / 260)) + '분 거리';
+    $('#ccDistSub').textContent = '신호 대기 포함 약 ' + Math.max(1, Math.round(o.limit / 60)) + '분';
     $('#ccTime').textContent = Math.floor(o.limit / 60) + '분 ' + (o.limit % 60 ? (o.limit % 60) + '초' : '');
     $('#ccFee').innerHTML = Math.round(o.fee).toLocaleString('ko-KR') + '<span>원</span>';
     $('#callWrap').classList.remove('hidden');
@@ -1776,11 +1925,15 @@
   }
 
   function showSettle(o) {
-    var timeBonus = o.late ? 0 : Math.min(1200, Math.round(Math.max(0, o.timeLeft) * 70 / 100) * 100);
+    // 시간 보너스: 남은 시간에 비례(최대 1,600원)
+    var timeBonus = o.late ? 0 : clamp(Math.round(Math.max(0, o.timeLeft) * 8 / 10) * 10, 0, 1600);
     var tip = Math.round(clamp(o.food, 0, 100) * 9 / 100) * 100;
-    var signBonus = o.violations === 0 ? 500 : -400 * o.violations;
-    var total = Math.max(0, Math.round(o.fee + timeBonus + tip + signBonus));
-    var stars = 5.0 - o.violations * 0.5 - o.collisions * 0.12 - (100 - clamp(o.food, 0, 100)) / 100 * 1.4 - (o.late ? 1.0 : 0);
+    // 안전 배달 보너스: 무사고·신호 준수 시 +800, 위반/추돌 시 감액
+    var safety = clamp(800 - o.violations * 350 - o.collisions * 120, -600, 800);
+    var mannerCnt = Math.min(3, o.mannerCount || 0);
+    var manner = mannerCnt * 100;
+    var total = Math.max(0, Math.round(o.fee + timeBonus + tip + safety + manner));
+    var stars = 5.0 - o.violations * 0.4 - o.collisions * 0.1 - (100 - clamp(o.food, 0, 100)) / 100 * 1.4 - (o.late ? 1.0 : 0);
     stars = Math.round(clamp(stars, 1, 5) * 10) / 10;
 
     G.stats.money += total;
@@ -1795,9 +1948,13 @@
     $('#stTime').textContent = (timeBonus >= 0 ? '+' : '') + timeBonus.toLocaleString('ko-KR') + '원';
     $('#stTime').parentNode.classList.toggle('minus', timeBonus < 0);
     $('#stTip').textContent = '+' + tip.toLocaleString('ko-KR') + '원';
-    $('#stSign').textContent = (signBonus >= 0 ? '+' : '') + signBonus.toLocaleString('ko-KR') + '원';
-    $('#stSign').parentNode.classList.toggle('minus', signBonus < 0);
-    $('#stSignK').textContent = o.violations === 0 ? '신호 준수 보너스' : '신호위반 ' + o.violations + '회';
+    $('#stSign').textContent = (safety >= 0 ? '+' : '') + safety.toLocaleString('ko-KR') + '원';
+    $('#stSign').parentNode.classList.toggle('minus', safety < 0);
+    $('#stSignK').textContent = (o.violations === 0 && o.collisions === 0) ? '안전 배달 보너스'
+      : (o.violations > 0 ? '안전 감점 · 신호위반 ' + o.violations + '회' : '안전 감점 · 추돌 ' + o.collisions + '회');
+    $('#stManner').textContent = '+' + manner.toLocaleString('ko-KR') + '원';
+    $('#stManner').parentNode.classList.toggle('zero', manner === 0);
+    $('#stMannerK').textContent = mannerCnt > 0 ? '매너 보너스 · 방향지시등 ' + mannerCnt + '회' : '매너 보너스 · 방향지시등';
     $('#stTotal').textContent = Math.round(total).toLocaleString('ko-KR') + '원';
 
     var full = Math.floor(stars), half = stars - full >= 0.5;
@@ -1870,6 +2027,43 @@
     el.addEventListener('lostpointercapture', up);
   }
 
+  /* ---------- 방향지시등 ---------- */
+  var BLINK_PERIOD = 0.92, BLINK_ON = 0.46;
+  function turnBlinkOn() {
+    return G.turn !== 0 && (clockT % BLINK_PERIOD) < BLINK_ON;
+  }
+  function updateTurnUI() {
+    if (UI.btnTurnL) UI.btnTurnL.classList.toggle('on', G.turn < 0);
+    if (UI.btnTurnR) UI.btnTurnR.classList.toggle('on', G.turn > 0);
+  }
+  function setTurn(dir) {
+    if (!G.running || G.paused) return G.turn;
+    G.turn = (G.turn === dir) ? 0 : dir;
+    G.turnYawAcc = 0; G.turnAge = 0; G.mannerAcc = 0;
+    G.blinkOn = false;
+    if (G.turn !== 0) AU.tick(true);
+    updateTurnUI();
+    return G.turn;
+  }
+  function clearTurn() {
+    if (G.turn === 0) return;
+    G.turn = 0; G.turnYawAcc = 0; G.turnAge = 0; G.mannerAcc = 0;
+    updateTurnUI();
+    AU.tick(false);
+  }
+  function updateTurnLamps() {
+    var on = turnBlinkOn();
+    if (on !== G.blinkOn) {
+      G.blinkOn = on;
+      if (G.turn !== 0) AU.tick(on);
+    }
+    var leftOn = on && G.turn < 0, rightOn = on && G.turn > 0;
+    if (G.indL) G.indL.material.color.setHex(leftOn ? 0xffb300 : 0x352607);
+    if (G.indR) G.indR.material.color.setHex(rightOn ? 0xffb300 : 0x352607);
+    if (G.mirL) G.mirL.material.color.setHex(leftOn ? 0xffb300 : 0x556270);
+    if (G.mirR) G.mirR.material.color.setHex(rightOn ? 0xffb300 : 0x556270);
+  }
+
   function bindUI() {
     bindHold(UI.btnGas, function () { input.gas = true; }, function () { input.gas = false; });
     bindHold(UI.btnBrake, function () { input.brake = true; }, function () { input.brake = false; });
@@ -1877,6 +2071,9 @@
     bindHold(UI.btnRight, function () { input.right = true; }, function () { input.right = false; });
     UI.btnHorn.addEventListener('pointerdown', function (e) { e.preventDefault(); AU.horn(); });
     UI.btnHorn.addEventListener('click', function () { AU.horn(); });
+
+    if (UI.btnTurnL) UI.btnTurnL.addEventListener('click', function (e) { e.preventDefault(); setTurn(-1); });
+    if (UI.btnTurnR) UI.btnTurnR.addEventListener('click', function (e) { e.preventDefault(); setTurn(1); });
 
     document.querySelectorAll('.chip.tod').forEach(function (el) {
       el.addEventListener('click', function () { setTOD(el.getAttribute('data-tod')); AU.blip(620, 0.07, 'sine', 0.1, 0); });
@@ -1898,6 +2095,8 @@
       else if (k === 'ArrowLeft' || k === 'a' || k === 'A') { input.left = true; e.preventDefault(); }
       else if (k === 'ArrowRight' || k === 'd' || k === 'D') { input.right = true; e.preventDefault(); }
       else if (k === ' ' || k === 'Spacebar') { AU.horn(); e.preventDefault(); }
+      else if (k === 'q' || k === 'Q' || k === 'z' || k === 'Z') { if (!e.repeat) setTurn(-1); e.preventDefault(); }
+      else if (k === 'e' || k === 'E' || k === 'c' || k === 'C') { if (!e.repeat) setTurn(1); e.preventDefault(); }
     });
     window.addEventListener('keyup', function (e) {
       var k = e.key;
@@ -1945,7 +2144,8 @@
       '    <div class="stLine"><span class="k">기본 배달료</span><span class="v" id="stBase"></span></div>',
       '    <div class="stLine"><span class="k">시간 보너스</span><span class="v" id="stTime"></span></div>',
       '    <div class="stLine"><span class="k">음식 상태 팁</span><span class="v" id="stTip"></span></div>',
-      '    <div class="stLine"><span class="k" id="stSignK">신호 준수 보너스</span><span class="v" id="stSign"></span></div>',
+      '    <div class="stLine"><span class="k" id="stSignK">안전 배달 보너스</span><span class="v" id="stSign"></span></div>',
+      '    <div class="stLine"><span class="k" id="stMannerK">매너 보너스 · 방향지시등</span><span class="v" id="stManner"></span></div>',
       '    <div class="stDash"></div>',
       '    <div class="stTotal"><span class="k">정산 금액</span><span class="v" id="stTotal"></span></div>',
       '    <div class="stStars"><span class="s" id="stStars"></span><span class="n" id="stNum"></span><span class="lb" id="stMsg"></span></div>',
@@ -1990,6 +2190,15 @@
     return Math.sqrt(dx * dx + dz * dz);
   }
 
+  function interNear(rad) {
+    var best = null, bd = rad;
+    for (var i = 0; i < interList.length; i++) {
+      var d = dist2(interList[i][0], interList[i][1], G.pos.x, G.pos.z);
+      if (d < bd) { bd = d; best = interList[i]; }
+    }
+    return best;
+  }
+
   function hit(kind, strength) {
     if (G.hitCooldown > 0) return;
     G.hitCooldown = 0.45;
@@ -2015,6 +2224,7 @@
     var moving = G.mode === 'toStore' || G.mode === 'toCustomer';
     var canDrive = G.running && !G.paused && G.mode !== 'offer' && G.mode !== 'settle';
     var oldSpeed = G.speed;
+    var yawDelta = 0;
 
     if (canDrive) {
       if (G.throttle > 0.02) {
@@ -2038,6 +2248,7 @@
       var spd = Math.abs(G.speed);
       var steerRate = 1.25 * clamp(spd / 7, 0, 1) * (G.speed < 0 ? -1 : 1);
       G.yaw += G.steer * steerRate * dt;
+      yawDelta = G.steer * steerRate * dt;
       G.lean = lerp(G.lean, G.steer * 0.36 * clamp(spd / 11, 0, 1), 1 - Math.exp(-dt * 6));
       // 이동
       G.pos.x += Math.sin(G.yaw) * G.speed * dt;
@@ -2088,6 +2299,27 @@
         G.speed *= 0.35;
         if (impact2 > 2.5) hit('car', impact2);
       }
+    }
+
+    // 방향지시등: 회전 완료 시 자동 소등 + 매너 보너스
+    if (G.turn !== 0 && canDrive) {
+      G.turnAge += dt;
+      var signedYaw = yawDelta * G.turn;
+      if (signedYaw > 0) {
+        G.mannerAcc += signedYaw;
+        if (G.order && moving && G.mannerAcc > 0.45) {
+          var ni = interNear(26);
+          if (ni && (!ni.mannerAt || G.time - ni.mannerAt > 20)) {
+            ni.mannerAt = G.time;
+            G.order.mannerCount = (G.order.mannerCount || 0) + 1;
+            if (G.order.mannerCount <= 3) {
+              toast('방향지시등 매너!', '안전 보너스 +100원', 1100);
+              AU.blip(1040, 0.1, 'triangle', 0.13, 0);
+            }
+          }
+        }
+      }
+      if (G.turnAge > 25 || (G.mannerAcc > 0.55 && Math.abs(G.steer) < 0.35)) clearTurn();
     }
 
     // 보행자/차량 애니메이션
@@ -2165,6 +2397,58 @@
     if (G.stats.count || G.stats.money) refreshStatsUI();
     if (toastT > 0) { toastT -= 0.1; if (toastT <= 0) UI.toast.classList.remove('on'); }
     if (warnT > 0) { warnT -= 0.1; if (warnT <= 0) UI.warn.classList.remove('on'); }
+    updateSignalBadge();
+  }
+
+  /* ---------- 전방 신호 배지 ---------- */
+  function nearestAheadInter(maxDist) {
+    var fx = Math.sin(G.yaw), fz = -Math.cos(G.yaw);
+    var best = null;
+    for (var i = 0; i < interList.length; i++) {
+      var it = interList[i];
+      var dx = it[0] - G.pos.x, dz = it[1] - G.pos.z;
+      if (Math.abs(dx) < 12.5 && Math.abs(dz) < 12.5) continue;   // 교차로 내부
+      var along = dx * fx + dz * fz;
+      if (along < 0 || along > maxDist) continue;
+      if (Math.abs(dx * fz - dz * fx) > 15) continue;             // 내 차로 밖
+      if (!best || along < best.along) {
+        best = { x: it[0], z: it[1], along: along, axis: Math.abs(dz) > Math.abs(dx) ? 'ns' : 'ew' };
+      }
+    }
+    return best;
+  }
+
+  function signalHudInfo() {
+    var it = nearestAheadInter(82);
+    if (!it) return null;
+    var sl = signalLeft(it.axis);
+    return { axis: it.axis, state: sl.state, left: sl.left, along: Math.round(it.along), inter: { x: it.x, z: it.z } };
+  }
+
+  function updateSignalBadge() {
+    if (!UI.sigBadge) return;
+    var driving = G.running && !G.paused && (G.mode === 'toStore' || G.mode === 'toCustomer');
+    var info = driving ? signalHudInfo() : null;
+    if (!info) {
+      UI.sigBadge.classList.remove('show', 'red', 'yel', 'grn');
+      if (UI.stopHint) UI.stopHint.classList.remove('up');
+      return;
+    }
+    var cls = info.state === 0 ? 'red' : (info.state === 1 ? 'yel' : 'grn');
+    var txt, total;
+    if (info.state === 0) { txt = '전방 적신호 · 정지선 앞 정차'; total = SIG_GREEN + SIG_YELLOW; }
+    else if (info.state === 1) { txt = '곧 적신호 · 정지 준비'; total = SIG_YELLOW; }
+    else { txt = '전방 초록불 · 진행 가능'; total = SIG_GREEN; }
+    UI.sigBadge.classList.add('show', cls);
+    UI.sigBadge.classList.toggle('red', cls === 'red');
+    UI.sigBadge.classList.toggle('yel', cls === 'yel');
+    UI.sigBadge.classList.toggle('grn', cls === 'grn');
+    if (UI.stopHint) UI.stopHint.classList.add('up');
+    if (UI.sigTx.textContent !== txt) UI.sigTx.textContent = txt;
+    var sec = Math.max(1, Math.ceil(info.left));
+    var cdTxt = sec + '초';
+    if (UI.sigCd.textContent !== cdTxt) UI.sigCd.textContent = cdTxt;
+    if (UI.sigBar) UI.sigBar.style.transform = 'scaleX(' + clamp(info.left / total, 0.03, 1).toFixed(2) + ')';
   }
 
   function updateBeacon(b, dt) {
@@ -2196,7 +2480,7 @@
             if (G.order) G.order.violations++;
             G.food = clamp(G.food - 4, 0, 100);
             AU.violation();
-            warn('신호위반!', '별점 -0.5 · 신호 준수 보너스 없음', 2000);
+            warn('신호위반!', '별점 -0.4 · 안전 배달 보너스 -350원', 2000);
           }
         }
       }
@@ -2204,11 +2488,28 @@
   }
 
   function signalStates() {
-    var c = clockT % 22;
-    if (c < 9) return { ns: 2, ew: 0 };
-    if (c < 11) return { ns: 1, ew: 0 };
-    if (c < 20) return { ns: 0, ew: 2 };
+    var c = clockT % SIG_CYCLE;                       // 15.6초 주기 (짧은 적신호 대기)
+    if (c < SIG_GREEN) return { ns: 2, ew: 0 };
+    if (c < SIG_GREEN + SIG_YELLOW) return { ns: 1, ew: 0 };
+    if (c < SIG_GREEN * 2 + SIG_YELLOW) return { ns: 0, ew: 2 };
     return { ns: 0, ew: 1 };
+  }
+
+  // 해당 축의 현재 신호와 남은 초
+  function signalLeft(axis) {
+    var c = clockT % SIG_CYCLE;
+    var st = signalStates()[axis];
+    var left;
+    if (axis === 'ns') {
+      if (c < SIG_GREEN) left = SIG_GREEN - c;
+      else if (c < SIG_GREEN + SIG_YELLOW) left = SIG_GREEN + SIG_YELLOW - c;
+      else left = SIG_CYCLE - c;
+    } else {
+      if (c < SIG_GREEN + SIG_YELLOW) left = SIG_GREEN + SIG_YELLOW - c;
+      else if (c < SIG_GREEN * 2 + SIG_YELLOW) left = SIG_GREEN * 2 + SIG_YELLOW - c;
+      else left = SIG_CYCLE - c;
+    }
+    return { state: st, left: left };
   }
 
   function updateSignals() {
@@ -2217,15 +2518,22 @@
     if (key === signalPhaseNow) return;
     signalPhaseNow = key;
     if (!lampMesh) return;
-    var col = new THREE.Color();
+    var col = new THREE.Color(), hc = new THREE.Color();
     for (var i = 0; i < lampData.length; i++) {
       var d = lampData[i];
       var s = d.axis === 0 ? st.ns : st.ew;
-      if (s === d.col) col.setHex(d.col === 0 ? LAMP_COL.redOn : (d.col === 1 ? LAMP_COL.yelOn : LAMP_COL.grnOn));
-      else col.setHex(d.col === 0 ? LAMP_COL.redOff : (d.col === 1 ? LAMP_COL.yelOff : LAMP_COL.grnOff));
+      var on = (s === d.col);
+      col.setHex(on ? (d.col === 0 ? LAMP_COL.redOn : (d.col === 1 ? LAMP_COL.yelOn : LAMP_COL.grnOn))
+        : (d.col === 0 ? LAMP_COL.redOff : (d.col === 1 ? LAMP_COL.yelOff : LAMP_COL.grnOff)));
       lampMesh.setColorAt(d.idx, col);
+      if (haloData[i] && haloMesh) {
+        if (on) { hc.setHex(d.col === 0 ? 0xff3a20 : (d.col === 1 ? 0xffc400 : 0x2af582)); }
+        else hc.setHex(0x000000);
+        haloMesh.setColorAt(haloData[i].idx, hc);
+      }
     }
     if (lampMesh.instanceColor) lampMesh.instanceColor.needsUpdate = true;
+    if (haloMesh && haloMesh.instanceColor) haloMesh.instanceColor.needsUpdate = true;
   }
 
   /* ---------- 차량/보행자 ---------- */
@@ -2362,6 +2670,24 @@
     roundRect(c, 152, 168, Math.max(4, 150 * G.food / 100), 12, 6); c.fill();
     c.fillStyle = '#6d7c92'; c.font = '800 13px ' + KR_FONT; c.textAlign = 'left';
     c.fillText('음식', 152, 162);
+
+    // 방향지시등 인디케이터 (주황 점멸)
+    var blinkOn = turnBlinkOn();
+    function turnArrow(ax, dir, lit) {
+      c.save();
+      c.globalAlpha = lit ? 1 : 0.22;
+      c.fillStyle = lit ? '#ffb300' : '#4a4335';
+      if (lit) { c.shadowColor = '#ff9a00'; c.shadowBlur = 12; }
+      c.beginPath();
+      c.moveTo(ax + dir * 15, 36);
+      c.lineTo(ax - dir * 9, 23);
+      c.lineTo(ax - dir * 9, 49);
+      c.closePath(); c.fill();
+      if (lit) { c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = 2; c.stroke(); }
+      c.restore();
+    }
+    turnArrow(238, -1, blinkOn && G.turn < 0);
+    turnArrow(290, 1, blinkOn && G.turn > 0);
     speedoTex.needsUpdate = true;
   }
 
@@ -2507,7 +2833,7 @@
   function updateCamera(dt) {
     if (G.camOverride) {
       camera.position.set(G.camOverride.x, G.camOverride.y, G.camOverride.z);
-      camera.rotation.set(G.camOverride.p, -G.camOverride.y, 0);
+      camera.rotation.set(G.camOverride.p, -(G.camOverride.yaw || 0), 0);
       return;
     }
     var spdN = clamp(Math.abs(G.speed) / MAX_SPEED, 0, 1);
@@ -2530,8 +2856,6 @@
     if (G.barGroup) {
       G.barGroup.rotation.y = lerp(G.barGroup.rotation.y, G.steer * 0.24, 1 - Math.exp(-dt * 10));
     }
-    if (G.indL) G.indL.material.color.setHex(input.left ? 0x39ff88 : 0x1a3a26);
-    if (G.indR) G.indR.material.color.setHex(input.right ? 0x39ff88 : 0x1a2333);
     // 남산 타워 비콘 점멸
     if (towerBeaconMat) {
       var on = (clockT % 2) < 0.7;
@@ -2549,7 +2873,7 @@
     G.running = true;
     G.mode = 'idle';
     G.paused = false;
-    G.pos.x = 34; G.pos.z = 120; G.yaw = 0; G.speed = 0;
+    G.pos.x = 36.7; G.pos.z = 120; G.yaw = 0; G.speed = 0;
     updateCamera(0.016);
     refreshStatsUI();
     newOrder();
@@ -2653,6 +2977,8 @@
       }
     }
     updateCamera(dt);
+    updateTurnLamps();
+    if (haloMesh) haloMesh.material.opacity = 0.72 + Math.sin(clockT * 2.6) * 0.16;
     renderer.render(scene, camera);
   }
 
@@ -2699,7 +3025,7 @@
           store: G.order.store.name, dest: G.order.destLabel, fee: G.order.fee,
           limit: G.order.limit, left: Math.round(G.order.timeLeft),
           violations: G.order.violations, collisions: G.order.collisions,
-          late: G.order.late, picked: G.order.picked,
+          late: G.order.late, picked: G.order.picked, manner: G.order.mannerCount || 0,
           storePos: { x: Math.round(G.order.store.x), z: Math.round(G.order.store.z) },
           destPos: { x: Math.round(G.order.dest.x), z: Math.round(G.order.dest.z) }
         } : null,
@@ -2810,6 +3136,53 @@
       return { x: t.x, z: t.z, dist: Math.round(dist2(t.x, t.z, G.pos.x, G.pos.z)) };
     },
     signal: function () { return signalStates(); },
+    signalLeft: function (axis) { return signalLeft(axis || 'ns'); },
+    signalInfo: function () {
+      var info = signalHudInfo();
+      var el = UI.sigBadge;
+      return {
+        info: info,
+        badge: {
+          shown: el.classList.contains('show'),
+          cls: el.className,
+          text: UI.sigTx.textContent, cd: UI.sigCd.textContent,
+          bottom: el.getBoundingClientRect().bottom, top: el.getBoundingClientRect().top
+        }
+      };
+    },
+    turn: function () {
+      return {
+        dir: G.turn, blinkOn: turnBlinkOn(),
+        btnL: UI.btnTurnL ? UI.btnTurnL.className : null,
+        btnR: UI.btnTurnR ? UI.btnTurnR.className : null,
+        indL: G.indL ? G.indL.material.color.getHexString() : null,
+        indR: G.indR ? G.indR.material.color.getHexString() : null,
+        mirL: G.mirL ? G.mirL.material.color.getHexString() : null,
+        mirR: G.mirR ? G.mirR.material.color.getHexString() : null
+      };
+    },
+    setTurn: function (d) { return setTurn(d); },
+    clearTurn: function () { clearTurn(); },
+    lanes: function () { return laneStats; },
+    limitFor: function (d) { return Math.round(72 + d / 6.5); },
+    dists: function () { return storesArr.length; },
+    verifySignals: function () {
+      var bad = [], minY = 99, maxY = -99, maxLat = 0;
+      for (var i = 0; i < gantryHeads.length; i++) {
+        var h = gantryHeads[i];
+        var dot = h.face.x * h.dir.x + h.face.z * h.dir.z;   // 마주보면 -1
+        var lat = Math.abs(h.lateral);
+        minY = Math.min(minY, h.head.y); maxY = Math.max(maxY, h.head.y);
+        maxLat = Math.max(maxLat, lat);
+        if (dot > -0.98) bad.push({ i: i, kind: 'facing', dot: Math.round(dot * 100) / 100 });
+        if (lat > 9.5) bad.push({ i: i, kind: 'lateral', lat: lat });
+        if (Math.abs(h.head.x - h.ix) > 14 || Math.abs(h.head.z - h.iz) > 14) bad.push({ i: i, kind: 'offset' });
+      }
+      return {
+        heads: gantryHeads.length, lamps: lampData.length, halos: haloData.length,
+        y: [minY, maxY], maxLat: maxLat, badCount: bad.length, bad: bad.slice(0, 8), ok: bad.length === 0
+      };
+    },
     light: function () {
       if (!headlight) return null;
       var v = new THREE.Vector3();
@@ -2822,7 +3195,7 @@
     threeReady: function () { return !!renderer; },
     setCam: function (x, y, z, yaw, pitch) {
       if (x === null) { G.camOverride = null; return null; }
-      G.camOverride = { x: x, y: y, z: z, y: yaw || 0, p: (pitch === undefined ? -0.2 : pitch) };
+      G.camOverride = { x: x, y: y, z: z, yaw: yaw || 0, p: (pitch === undefined ? -0.2 : pitch) };
       updateCamera(0.016);
       return G.camOverride;
     },
