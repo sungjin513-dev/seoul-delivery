@@ -1213,7 +1213,8 @@
 
 
   /* --- 신호등 (차도 위 오버헤드 갠트리) --- */
-  var SIG_GREEN = 6.4, SIG_YELLOW = 1.4, SIG_CYCLE = (SIG_GREEN + SIG_YELLOW) * 2;
+  // 초록 11초 + 황색 2초 = 26초 주기 (한 번의 초록불에 교차로 1~2개·좌회전까지 여유롭게 통과)
+  var SIG_GREEN = 11.0, SIG_YELLOW = 2.0, SIG_CYCLE = (SIG_GREEN + SIG_YELLOW) * 2;
 
   function makeTrafficLights() {
     var inter = [];
@@ -1824,8 +1825,8 @@
     } while ((dist < 150 || dist > 700) && tries < 40);
     if (dist < 120) dist = 120;
     var fee = 2500 + Math.round(dist * 2.3 / 100) * 100;
-    // 신호 대기·교차로 감속 시간을 넉넉히 포함한 제한시간
-    var limit = Math.round(72 + dist / 6.5);
+    // 신호 대기·교차로 감속 시간을 넉넉히 포함한 제한시간 (300m≈200초, 500m≈250초)
+    var limit = Math.round(125 + dist / 4.0);
     G.pending = {
       store: store, dest: dest, dist: dist, fee: fee, limit: limit,
       timeLeft: limit, violations: 0, collisions: 0, food: 100, late: false,
@@ -1925,8 +1926,9 @@
   }
 
   function showSettle(o) {
-    // 시간 보너스: 남은 시간에 비례(최대 1,600원)
-    var timeBonus = o.late ? 0 : clamp(Math.round(Math.max(0, o.timeLeft) * 8 / 10) * 10, 0, 1600);
+    // 시간 보너스: 제한시간 대비 남은 시간 비율(최대 1,600원) — 넉넉해진 제한시간에 맞춘 비율식
+    var timeFrac = o.limit > 0 ? clamp(Math.max(0, o.timeLeft) / o.limit, 0, 1) : 0;
+    var timeBonus = o.late ? 0 : Math.round(timeFrac * 1600 / 10) * 10;
     var tip = Math.round(clamp(o.food, 0, 100) * 9 / 100) * 100;
     // 안전 배달 보너스: 무사고·신호 준수 시 +800, 위반/추돌 시 감액
     var safety = clamp(800 - o.violations * 350 - o.collisions * 120, -600, 800);
@@ -2428,7 +2430,8 @@
   function updateSignalBadge() {
     if (!UI.sigBadge) return;
     var driving = G.running && !G.paused && (G.mode === 'toStore' || G.mode === 'toCustomer');
-    var info = driving ? signalHudInfo() : null;
+    // 교차로 안(회전 포함)에서는 지나가는 중인 신호를 엉뚱한 축으로 띄우지 않는다
+    var info = (driving && !inAnyInterZone()) ? signalHudInfo() : null;
     if (!info) {
       UI.sigBadge.classList.remove('show', 'red', 'yel', 'grn');
       if (UI.stopHint) UI.stopHint.classList.remove('up');
@@ -2462,33 +2465,58 @@
     b.label.position.y = 6.1 + Math.sin(clockT * 1.8) * 0.18;
   }
 
-  function checkSignalViolation() {
-    if (G.time - G.lastViolation < 2.5) return;
-    if (Math.abs(G.speed) < 3) return;
-    var states = signalStates();
+  /* 신호위반 판정: 교차로에 '새로 진입하는 순간' 1회만, 진입한 축의 신호로만 판정한다.
+     교차로 안에서 좌회전/우회전으로 진행 축이 바뀌어도 다시 판정하지 않는다. */
+  var INTER_ENTER_HALF = 17.2;   // 정지선(16.7)을 넘어 교차로로 들어서는 지점
+  var INTER_EXIT_HALF = 18.6;    // 교차로를 완전히 빠져나간 뒤에만 다음 진입을 판정(히스테리시스)
+
+  function resetInterZones() {
     for (var i = 0; i < interList.length; i++) {
       var it = interList[i];
-      if (Math.abs(G.pos.x - it[0]) < 11.5 && Math.abs(G.pos.z - it[1]) < 11.5) {
-        var vx = Math.sin(G.yaw) * G.speed;
-        var vz = -Math.cos(G.yaw) * G.speed;
-        var axis = Math.abs(vx) > Math.abs(vz) ? 'ew' : 'ns';
-        var st = states[axis];
-        if (st === 0) {
-          if (!it.hitAt || G.time - it.hitAt > 4) {
-            it.hitAt = G.time;
-            G.lastViolation = G.time;
-            if (G.order) G.order.violations++;
-            G.food = clamp(G.food - 4, 0, 100);
-            AU.violation();
-            warn('신호위반!', '별점 -0.4 · 안전 배달 보너스 -350원', 2000);
-          }
-        }
-      }
+      it.inZone = false; it.enteredOnGreen = null; it.entryAxis = null;
     }
   }
 
+  function checkSignalViolation() {
+    var states = null;
+    for (var i = 0; i < interList.length; i++) {
+      var it = interList[i];
+      var ax = Math.abs(G.pos.x - it[0]), az = Math.abs(G.pos.z - it[1]);
+      if (it.inZone) {
+        // 교차로 내부: 회전으로 축이 바뀌어도 추가 판정 없음. 완전히 이탈해야 해제.
+        if (ax > INTER_EXIT_HALF || az > INTER_EXIT_HALF) { it.inZone = false; it.enteredOnGreen = null; it.entryAxis = null; }
+        continue;
+      }
+      if (ax >= INTER_ENTER_HALF || az >= INTER_ENTER_HALF) continue;
+
+      // 새로 진입: 진입 축(교차로 중심에서 들어온 쪽)과 그때의 신호를 래치
+      var axis = az >= ax ? 'ns' : 'ew';
+      if (!states) states = signalStates();
+      var st = states[axis];
+      it.inZone = true;
+      it.entryAxis = axis;
+      it.enteredOnGreen = (st !== 0);   // 초록(2)·황색(1) 진입은 무조건 정상 통과
+      it.enteredAt = G.time;
+      if (st !== 0) continue;
+      if (!G.order) continue;
+      if (Math.abs(G.speed) < 3) continue;              // 정지선에서 살짝 밀린 경우는 관대하게
+      if (G.time - G.lastViolation < 2.5) continue;
+      G.lastViolation = G.time;
+      G.order.violations++;
+      G.food = clamp(G.food - 4, 0, 100);
+      AU.violation();
+      warn('신호위반!', '별점 -0.4 · 안전 배달 보너스 -350원', 2000);
+    }
+  }
+
+  // 지금 교차로를 통과(진입~이탈)하는 중인가 — 전방 신호 배지 오표시 방지용
+  function inAnyInterZone() {
+    for (var i = 0; i < interList.length; i++) if (interList[i].inZone) return true;
+    return false;
+  }
+
   function signalStates() {
-    var c = clockT % SIG_CYCLE;                       // 15.6초 주기 (짧은 적신호 대기)
+    var c = clockT % SIG_CYCLE;                       // 26초 주기 (초록 11 · 황색 2)
     if (c < SIG_GREEN) return { ns: 2, ew: 0 };
     if (c < SIG_GREEN + SIG_YELLOW) return { ns: 1, ew: 0 };
     if (c < SIG_GREEN * 2 + SIG_YELLOW) return { ns: 0, ew: 2 };
@@ -2874,6 +2902,8 @@
     G.mode = 'idle';
     G.paused = false;
     G.pos.x = 36.7; G.pos.z = 120; G.yaw = 0; G.speed = 0;
+    G.lastViolation = 0;
+    resetInterZones();
     updateCamera(0.016);
     refreshStatsUI();
     newOrder();
@@ -3164,7 +3194,17 @@
     setTurn: function (d) { return setTurn(d); },
     clearTurn: function () { clearTurn(); },
     lanes: function () { return laneStats; },
-    limitFor: function (d) { return Math.round(72 + d / 6.5); },
+    limitFor: function (d) { return Math.round(125 + d / 4.0); },
+    interZones: function () {
+      var on = [];
+      for (var i = 0; i < interList.length; i++) if (interList[i].inZone) on.push({ x: interList[i][0], z: interList[i][1], axis: interList[i].entryAxis, green: interList[i].enteredOnGreen });
+      return on;
+    },
+    sigConsts: function () { return { green: SIG_GREEN, yellow: SIG_YELLOW, cycle: SIG_CYCLE }; },
+    timeBonusFor: function (left, limit) {
+      var f = limit > 0 ? clamp(Math.max(0, left) / limit, 0, 1) : 0;
+      return Math.round(f * 1600 / 10) * 10;
+    },
     dists: function () { return storesArr.length; },
     verifySignals: function () {
       var bad = [], minY = 99, maxY = -99, maxLat = 0;
