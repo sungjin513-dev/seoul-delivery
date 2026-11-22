@@ -27,8 +27,7 @@
   .hidden{display:none !important;}
 
   /* ---------- HUD ---------- */
-  #hud{position:absolute;inset:0;pointer-events:none;z-index:20;}
-  .top{position:absolute;left:0;right:0;top:0;padding:calc(var(--sat) + 8px) 12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  #hud{position:absolute;inset:0;pointer-events:none;z-index:20;}  .top{position:absolute;left:0;right:0;top:0;padding:calc(var(--sat) + 8px) 12px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
   .tl{display:flex;flex-direction:column;gap:6px;width:196px;}
   .tr{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
   .pill{display:flex;align-items:center;gap:6px;height:27px;padding:0 10px;border-radius:14px;
@@ -54,21 +53,26 @@
   .fbar>div.warn{background:linear-gradient(90deg,#ffb04a,#ff8a1a);}
   .fbar>div.bad{background:linear-gradient(90deg,#ff6b4a,#e53935);}
 
-  .todRow{display:flex;gap:5px;align-items:center;}
-  .chip{pointer-events:auto;font-family:inherit;font-size:11px;font-weight:700;color:#cfd8e6;letter-spacing:-.2px;
-    background:var(--panel);border:1px solid var(--line);border-radius:11px;height:27px;padding:0 9px;
+  .todRow{display:flex;gap:4px;align-items:center;}
+  .chip{pointer-events:auto;font-family:inherit;font-size:11px;font-weight:700;color:#cfd8e6;letter-spacing:-.2px;white-space:nowrap;
+    background:var(--panel);border:1px solid var(--line);border-radius:11px;height:27px;padding:0 7px;
     backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:all .16s;}
   .chip.on{background:rgba(255,122,26,.92);border-color:#ff9c4a;color:#fff;box-shadow:0 2px 10px rgba(255,122,26,.32);}
   .chip:active{transform:scale(.94);}
   .chip.mute{width:38px;padding:0;font-size:10.5px;}
   .chip.mute.off{color:#8894a8;text-decoration:line-through;}
+  .chip.mode{height:23px;font-size:9.5px;padding:0 8px;border-radius:8px;background:rgba(9,14,24,.86);letter-spacing:-.1px;}
+  .chip.mode.on{background:rgba(64,145,235,.92);border-color:#a6d3ff;color:#04111f;}
+  .bmHead .chip.mode{flex:none;}
 
-  .mapWrap{position:relative;width:108px;height:108px;border-radius:14px;overflow:hidden;
-    background:rgba(10,15,26,.78);border:1px solid var(--line);box-shadow:0 4px 16px rgba(0,0,0,.35);}
+  .mapWrap{position:relative;width:108px;height:108px;border-radius:14px;overflow:hidden;pointer-events:auto;cursor:pointer;
+    background:rgba(8,13,22,.86);border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 16px rgba(0,0,0,.42),inset 0 0 0 1px rgba(255,255,255,.04);}
+  .mapWrap::after{content:'⤢';position:absolute;right:3px;bottom:2px;font-size:10px;font-weight:900;color:rgba(255,255,255,.5);pointer-events:none;}
+  .mapWrap:active{transform:scale(.97);}
   #mini{width:100%;height:100%;display:block;}
-  .mapN{position:absolute;top:3px;left:5px;font-size:8px;font-weight:800;color:#8ea0b8;letter-spacing:.5px;}
-  #mapDist{position:absolute;left:0;right:0;bottom:3px;text-align:center;font-size:9.5px;font-weight:800;
-    color:#fff;letter-spacing:-.2px;text-shadow:0 1px 4px #000;font-variant-numeric:tabular-nums;}
+  .mapN{position:absolute;top:2px;left:5px;font-size:8px;font-weight:800;color:#8ea0b8;letter-spacing:.5px;text-shadow:0 1px 3px #000;}
+  #mapDist{position:absolute;left:0;right:0;bottom:2px;text-align:center;font-size:9.5px;font-weight:800;
+    color:#fff;letter-spacing:-.2px;text-shadow:0 1px 4px #000,0 -1px 4px #000;font-variant-numeric:tabular-nums;}
 
   /* nav banner above controls */
   #navBar{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--sab) + 168px);
@@ -318,6 +322,153 @@
     font-weight:800;letter-spacing:-.3px;color:#3a4453;background:#eef0f4;border:1px solid #d6dae2;}
   #stGarage:active{transform:scale(.97);}
 
+  /* ---------- 연료 게이지 ---------- */
+  .pill.fuel{gap:5px;padding:0 8px;}
+  .pill.fuel .fi{font-size:10.5px;filter:saturate(1.15);}
+  .fuelbar{position:relative;width:64px;height:6px;border-radius:4px;background:rgba(255,255,255,.16);overflow:hidden;}
+  .fuelbar>div{height:100%;width:100%;border-radius:4px;background:linear-gradient(90deg,#4bd08a,#a8e05a);transition:width .2s linear,background .3s;}
+  .fuelbar>div.warn{background:linear-gradient(90deg,#ffb04a,#ff8a1a);}
+  .fuelbar>div.bad{background:linear-gradient(90deg,#ff6b4a,#e53935);animation:fuelPulse .7s infinite alternate;}
+  @keyframes fuelPulse{from{opacity:.5}to{opacity:1}}
+  .pill.fuel b{font-size:10px;font-variant-numeric:tabular-nums;min-width:27px;text-align:right;}
+  .pill.fuel.low{box-shadow:0 0 0 1px rgba(255,90,60,.65),0 2px 10px rgba(255,60,40,.3);}
+
+  /* ---------- 주유 버튼 ---------- */
+  #fuelBtn{position:absolute;left:50%;bottom:calc(var(--sab) + 272px);transform:translateX(-50%) translateY(10px) scale(.94);
+    display:flex;flex-direction:column;align-items:center;gap:1px;min-width:232px;padding:10px 18px 11px;border:0;border-radius:18px;
+    font-family:inherit;color:#04170f;background:linear-gradient(158deg,#a8f0c4,#3fd07a 62%,#22a85c);
+    box-shadow:0 10px 28px rgba(30,200,110,.42),inset 0 0 0 2px rgba(255,255,255,.34),inset 0 -6px 14px rgba(0,80,40,.28);
+    opacity:0;pointer-events:none;z-index:9;transition:opacity .15s,transform .15s;}
+  #fuelBtn.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1);pointer-events:auto;}
+  #fuelBtn.press{transform:translateX(-50%) translateY(0) scale(.93);}
+  #fuelBtn .fbTx{font-size:16.5px;font-weight:900;letter-spacing:-.6px;line-height:1.2;}
+  #fuelBtn .fbSub{font-size:10.5px;font-weight:800;letter-spacing:-.2px;opacity:.7;}
+
+  /* ---------- 헬멧 바이저 빗방울 ---------- */
+  #visor{position:absolute;inset:0;pointer-events:none;z-index:12;opacity:0;transition:opacity .5s;overflow:hidden;}
+  #visor.on{opacity:1;}
+  #visor .drop{position:absolute;border-radius:50% 50% 46% 54%;
+    background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.72),rgba(210,235,255,.46) 42%,rgba(160,205,240,.14) 68%,rgba(140,190,230,0) 76%);
+    box-shadow:inset 0 -1px 2px rgba(255,255,255,.36),0 1px 3px rgba(10,25,45,.24);
+    animation:dropSlide linear infinite;}
+  @keyframes dropSlide{
+    0%{transform:translate3d(0,0,0) scale(1);opacity:.85;}
+    70%{opacity:.68;}
+    100%{transform:translate3d(-5px,24px,0) scale(1.05);opacity:.32;}
+  }
+  #visor .mist{position:absolute;inset:0;
+    background:radial-gradient(120% 90% at 50% 50%,rgba(190,220,245,0) 46%,rgba(160,200,232,.14) 82%,rgba(130,175,215,.24) 100%);}
+
+  /* ---------- 멀티 콜 배차판 ---------- */
+  #boardWrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:60;
+    background:rgba(6,10,18,.55);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);pointer-events:auto;
+    padding:calc(var(--sat) + 12px) 12px calc(var(--sab) + 12px);}
+  #board{width:100%;max-width:362px;max-height:100%;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;
+    background:linear-gradient(180deg,#161d29 0%,#0d1220 100%);border:1px solid rgba(255,255,255,.13);
+    box-shadow:0 22px 54px rgba(0,0,0,.58);animation:cardIn .28s cubic-bezier(.2,1.2,.4,1);color:#fff;}
+  .bdHead{padding:12px 15px 10px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;}
+  .bdHead .k{font-size:9.5px;font-weight:800;letter-spacing:2.2px;color:#ff9a44;}
+  .bdHead .h{font-size:18px;font-weight:900;letter-spacing:-.6px;margin-top:1px;}
+  .bdHead .cnt{font-size:10.5px;font-weight:800;color:#0f1420;background:#ffcf3f;border-radius:9px;padding:4px 8px;}
+  .bdList{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:9px 11px 3px;display:flex;flex-direction:column;gap:8px;}
+  .bc{display:block;width:100%;padding:9px 10px 8px;border-radius:14px;background:rgba(255,255,255,.05);
+    border:1.5px solid rgba(255,255,255,.10);text-align:left;font-family:inherit;color:#fff;
+    transition:border-color .15s,background .15s,transform .08s;}
+  .bc:active{transform:scale(.985);}
+  .bc.sel{background:rgba(255,140,40,.14);border-color:#ff9c4a;box-shadow:0 0 0 1px rgba(255,156,74,.32),0 6px 18px rgba(255,106,0,.16);}
+  .bcTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+  .bcName{font-size:13.5px;font-weight:900;letter-spacing:-.4px;line-height:1.2;}
+  .bcMenu{font-size:10px;color:#9fb0c8;margin-top:1px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:188px;}
+  .bcFee{font-size:15px;font-weight:900;letter-spacing:-.5px;font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right;}
+  .bcFee small{display:block;font-size:8.5px;font-weight:700;color:#9fb0c8;letter-spacing:0;}
+  .bcDest{font-size:10.5px;color:#c8d2e2;margin-top:5px;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bcMeta{display:flex;gap:5px;align-items:center;margin-top:6px;}
+  .bcTag{font-size:9.5px;font-weight:800;border-radius:7px;padding:2px 6px;letter-spacing:-.2px;white-space:nowrap;}
+  .bcTag.soup{background:rgba(255,168,60,.2);color:#ffcf8a;border:1px solid rgba(255,168,60,.4);}
+  .bcTag.fried{background:rgba(255,220,80,.16);color:#ffe9a0;border:1px solid rgba(255,220,80,.38);}
+  .bcTag.drink{background:rgba(90,200,255,.16);color:#a9e2ff;border:1px solid rgba(90,200,255,.4);}
+  .bcTag.plain{background:rgba(255,255,255,.08);color:#b9c5d6;border:1px solid rgba(255,255,255,.14);}
+  .bcDist{font-size:9.5px;font-weight:800;color:#cfe0f4;background:rgba(255,255,255,.1);border-radius:7px;padding:2px 6px;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .bcChk{margin-left:auto;font-size:9.5px;font-weight:900;color:#ff9c4a;opacity:0;white-space:nowrap;}
+  .bc.sel .bcChk{opacity:1;}
+  .bdFoot{padding:10px 12px 4px;display:flex;gap:8px;}
+  .bdFoot button{height:46px;border-radius:13px;border:none;font-family:inherit;font-size:14px;font-weight:900;letter-spacing:-.3px;}
+  .bdFoot button:active{transform:scale(.96);}
+  #bdSkip{flex:.72;background:rgba(255,255,255,.09);color:#c2cddd;border:1px solid rgba(255,255,255,.14);}
+  #bdAccept{flex:1.28;background:linear-gradient(180deg,#ff8c2b,#ff6a00);color:#fff;box-shadow:0 8px 20px rgba(255,106,0,.34);}
+  .bdTip{padding:8px 14px 12px;font-size:9.5px;color:#7d8ca1;text-align:center;letter-spacing:-.1px;line-height:1.45;}
+  .bdTip b{color:#8fd2ff;font-weight:800;}
+
+  /* ---------- 배고픔 게이지 ---------- */
+  .pill.hunger{gap:5px;padding:0 8px;}
+  .pill.hunger .hi{font-size:10.5px;}
+  .hungerbar{position:relative;width:64px;height:6px;border-radius:4px;background:rgba(255,255,255,.16);overflow:hidden;}
+  .hungerbar>div{height:100%;width:100%;border-radius:4px;background:linear-gradient(90deg,#ffb347,#ffd97a);transition:width .2s linear,background .3s;}
+  .hungerbar>div.warn{background:linear-gradient(90deg,#ff9a3c,#ff6a1a);}
+  .hungerbar>div.bad{background:linear-gradient(90deg,#ff6b4a,#e53935);animation:fuelPulse .8s infinite alternate;}
+  .pill.hunger b{font-size:10px;font-variant-numeric:tabular-nums;min-width:27px;text-align:right;}
+  .pill.hunger.low{box-shadow:0 0 0 1px rgba(255,150,60,.65),0 2px 10px rgba(255,120,30,.3);}
+
+  /* ---------- 편의점 / 식사 ---------- */
+  #mealBtn{position:absolute;left:50%;bottom:calc(var(--sab) + 272px);transform:translateX(-50%) translateY(10px) scale(.94);
+    display:flex;flex-direction:column;align-items:center;gap:1px;min-width:232px;padding:10px 18px 11px;border:0;border-radius:18px;
+    font-family:inherit;color:#08213a;background:linear-gradient(158deg,#bfe4ff,#5bb6ff 62%,#2f86e0);
+    box-shadow:0 10px 28px rgba(40,140,230,.42),inset 0 0 0 2px rgba(255,255,255,.36),inset 0 -6px 14px rgba(0,50,110,.26);
+    opacity:0;pointer-events:none;z-index:9;transition:opacity .15s,transform .15s;}
+  #mealBtn.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1);pointer-events:auto;}
+  #mealBtn.press{transform:translateX(-50%) translateY(0) scale(.93);}
+  #mealBtn .mbTx{font-size:18px;font-weight:900;letter-spacing:-.6px;line-height:1.15;}
+  #mealBtn .mbSub{font-size:10.5px;font-weight:800;letter-spacing:-.2px;opacity:.72;}
+
+  #mealWrap{position:absolute;inset:0;z-index:88;display:flex;align-items:center;justify-content:center;
+    background:rgba(5,9,16,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:auto;
+    padding:calc(var(--sat) + 12px) 12px calc(var(--sab) + 12px);}
+  #meal{width:100%;max-width:340px;border-radius:20px;overflow:hidden;color:#fff;
+    background:linear-gradient(180deg,#17202e 0%,#0d1220 100%);border:1px solid rgba(255,255,255,.13);
+    box-shadow:0 24px 64px rgba(0,0,0,.62);animation:cardIn .26s cubic-bezier(.2,1.2,.4,1);}
+  .mHead{padding:13px 15px 10px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .mHead .k{font-size:9.5px;font-weight:800;letter-spacing:2.2px;color:#6fc6ff;}
+  .mHead .h{font-size:18px;font-weight:900;letter-spacing:-.6px;margin-top:1px;}
+  .mHead .bal{font-size:11px;color:#a8b6ca;margin-top:3px;letter-spacing:-.2px;}
+  .mHead .bal b{color:#ffd98a;font-weight:800;font-size:12.5px;font-variant-numeric:tabular-nums;}
+  .mItems{padding:9px 11px 4px;display:flex;flex-direction:column;gap:7px;}
+  .mi{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:13px;background:rgba(255,255,255,.05);
+    border:1.5px solid rgba(255,255,255,.10);font-family:inherit;color:#fff;text-align:left;width:100%;}
+  .mi:active{transform:scale(.985);}
+  .mi .em{font-size:19px;line-height:1;flex:none;}
+  .mi .mid{flex:1;min-width:0;display:block;}
+  .mi .nm{display:block;font-size:13px;font-weight:900;letter-spacing:-.3px;}
+  .mi .ds{display:block;font-size:9.5px;color:#93a3ba;margin-top:2px;letter-spacing:-.1px;}
+  .mi .pr{margin-left:auto;flex:none;font-size:13px;font-weight:900;color:#ffd98a;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .mi.hot{border-color:rgba(111,198,255,.55);background:rgba(60,150,230,.14);}
+  .mi:disabled{opacity:.45;}
+  .mFoot{padding:9px 14px 13px;}
+  .mFoot button{width:100%;height:42px;border-radius:12px;border:1px solid rgba(255,255,255,.14);font-family:inherit;
+    font-size:12.5px;font-weight:800;letter-spacing:-.3px;color:#cfd9e8;background:rgba(255,255,255,.07);}
+  .mFoot button:active{transform:scale(.97);}
+
+  /* ---------- 전체 지도 ---------- */
+  #bigMapWrap{position:absolute;inset:0;z-index:89;display:flex;align-items:center;justify-content:center;
+    background:rgba(5,9,16,.68);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);pointer-events:auto;
+    padding:calc(var(--sat) + 10px) 10px calc(var(--sab) + 10px);}
+  #bigMapPanel{width:100%;max-width:376px;max-height:100%;display:flex;flex-direction:column;border-radius:20px;overflow:hidden;
+    background:linear-gradient(180deg,#16202e 0%,#0b1018 100%);border:1px solid rgba(255,255,255,.13);
+    box-shadow:0 24px 64px rgba(0,0,0,.62);animation:cardIn .26s cubic-bezier(.2,1.2,.4,1);}
+  .bmHead{padding:11px 14px 9px;display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid rgba(255,255,255,.08);}
+  .bmHead .k{font-size:9px;font-weight:800;letter-spacing:2.2px;color:#ff9a44;}
+  .bmHead .h{font-size:17px;font-weight:900;letter-spacing:-.6px;margin-top:1px;}
+  .bmMap{padding:10px 12px 4px;}
+  #bigMap{width:100%;height:auto;display:block;border-radius:14px;background:#080d15;border:1px solid rgba(255,255,255,.1);}
+  .bmLegend{display:flex;flex-wrap:wrap;gap:6px 10px;padding:6px 14px 8px;font-size:9.5px;color:#b6c4d7;font-weight:700;letter-spacing:-.1px;}
+  .bmLegend span{display:flex;align-items:center;gap:4px;}
+  .bmLegend i{width:9px;height:9px;border-radius:3px;display:block;}
+  .bmLegend i.me{background:#fff;border-radius:50%;}
+  .bmLegend i.pin{background:#ffcf3f;}
+  .bmLegend i.fuel{background:#25b56a;}
+  .bmLegend i.mart{background:#2f86e0;}
+  .bmLegend i.store{background:#ff7a1a;border-radius:50%;}
+  .bmFoot{padding:2px 14px 12px;font-size:9.5px;color:#8b9bb2;text-align:center;letter-spacing:-.1px;line-height:1.45;}
+
   @media (max-height:700px){
     .mapWrap{width:94px;height:94px;}
     .tl{width:186px;}
@@ -330,11 +481,14 @@
   <canvas id="scene"></canvas>
   <div id="vig"></div>
   <div id="flash"></div>
+  <div id="visor"><div class="mist"></div></div>
 
   <div id="hud" class="hidden">
     <div class="top">
       <div class="tl">
         <div class="pill"><span id="statMoney">₩0</span><i></i><span id="statCount">0건</span><i></i><span class="star" id="statRating">★ –</span></div>
+        <div class="pill fuel" id="fuelPill"><span class="fi">⛽</span><div class="fuelbar"><div id="fuelFill"></div></div><b id="fuelVal">100%</b></div>
+        <div class="pill hunger" id="hungerPill"><span class="hi">🍚</span><div class="hungerbar"><div id="hungerFill"></div></div><b id="hungerVal">100%</b></div>
         <div id="orderPanel">
           <div class="obTop"><span id="orderPhase">콜 대기중</span><span class="tm" id="orderTimer">--:--</span></div>
           <div class="obStore" id="orderStore">콜을 기다리는 중…</div>
@@ -348,9 +502,11 @@
           <button class="chip tod on" data-tod="day">낮</button>
           <button class="chip tod" data-tod="sunset">노을</button>
           <button class="chip tod" data-tod="night">밤</button>
+          <button class="chip tod" data-tod="rain" id="rainChip">☔비</button>
           <button class="chip mute" id="muteBtn">소리</button>
         </div>
-        <div class="mapWrap"><canvas id="mini" width="216" height="216"></canvas><div class="mapN">N</div><div id="mapDist">—</div></div>
+        <div class="mapWrap" id="mapWrap"><canvas id="mini" width="216" height="216"></canvas><div id="mapDist">—</div></div>
+        <button class="chip mode on" id="mapModeBtn">🧭 내비</button>
         <button class="chip garage" id="garageBtn">🛠 차고<b id="garageBal">₩0</b></button>
       </div>
     </div>
@@ -358,6 +514,8 @@
     <div id="sigBadge"><i class="lamp"></i><span id="sigTx">전방 신호</span><span class="cd" id="sigCd">0초</span><i class="bar" id="sigBar"></i></div>
     <div id="stopHint">정차하면 픽업!</div>
     <button id="handBtn"><span class="hbIco">🛍️</span><span class="hbTx">음식 받기</span><span class="hbSub">사장님께 봉투를 받으세요</span></button>
+    <button id="fuelBtn"><span class="fbTx">⛽ 주유하기</span><span class="fbSub">₩1,500 · 만땅</span></button>
+    <button id="mealBtn"><span class="mbTx">🏪 편의점 들르기</span><span class="mbSub">삼각김밥 · 컵라면 · 도시락</span></button>
     <div id="toast"></div>
     <div id="warn"></div>
 
@@ -384,6 +542,39 @@
           <small>가속</small>
         </button>
       </div>
+    </div>
+  </div>
+
+  <div id="bigMapWrap" class="hidden">
+    <div id="bigMapPanel">
+      <div class="bmHead">
+        <div><div class="k">SEOUL MAP</div><div class="h">전체 지도</div></div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="chip mode on" id="mapModeBtn2">🧭 내비</button>
+          <button class="gClose" id="bmClose" aria-label="닫기">✕</button>
+        </div>
+      </div>
+      <div class="bmMap"><canvas id="bigMap" width="440" height="440"></canvas></div>
+      <div class="bmLegend">
+        <span><i class="me"></i>내 위치</span>
+        <span><i class="pin"></i>픽업·배달지</span>
+        <span><i class="fuel"></i>⛽ 주유소</span>
+        <span><i class="mart"></i>🏪 편의점</span>
+        <span><i class="store"></i>가게</span>
+      </div>
+      <div class="bmFoot" id="bmInfo">지도를 탭하면 닫혀요 · ⛽ 주유소와 🏪 편의점은 항상 표시됩니다</div>
+    </div>
+  </div>
+
+  <div id="mealWrap" class="hidden">
+    <div id="meal">
+      <div class="mHead">
+        <div><div class="k">CONVENIENCE · 편의점</div><div class="h" id="mTitle">무엇을 먹을까요?</div>
+          <div class="bal">보유 <b id="mMoney">₩0</b> · 배고픔 <b id="mHunger">100%</b></div></div>
+        <button class="gClose" id="mClose" aria-label="닫기">✕</button>
+      </div>
+      <div class="mItems" id="mItems"></div>
+      <div class="mFoot"><button id="mCancel">그냥 나가기</button></div>
     </div>
   </div>
 
@@ -480,7 +671,11 @@
     turn: 0, turnYawAcc: 0, turnAge: 0, mannerAcc: 0, blinkOn: false,
     stats: { money: 0, count: 0, ratingSum: 0, earned: 0, vehicles: ['basic'], equipped: 'basic' },
     statsSaved: null,
-    spec: null, vehicle: 'basic', gaugeMax: 90, garageOpen: false
+    spec: null, vehicle: 'basic', gaugeMax: 90, garageOpen: false,
+    fuel: 100, hunger: 100, fuelEmptyWarned: false, hungerWarned: false,
+    bumps: 0, refuels: 0, meals: 0, hornPeds: 0, hornCars: 0,
+    offers: [], selOffer: 0, mapMode: 'nav', nearStation: null, nearMart: null,
+    eating: false, mealPrevPaused: false, mapOpen: false, mapPrevPaused: false
   };
 
   var STATS_KEY = 'seoulDeliveryStats.v1';
@@ -532,14 +727,15 @@
         if (vs.indexOf('basic') < 0) vs.unshift('basic');
         G.stats.vehicles = vs;
         G.stats.equipped = (s.equipped && vs.indexOf(s.equipped) >= 0) ? s.equipped : 'basic';
-        G.tod = (s.tod === 'night' || s.tod === 'sunset' || s.tod === 'day') ? s.tod : 'day';
+        G.tod = (s.tod === 'night' || s.tod === 'sunset' || s.tod === 'day' || s.tod === 'rain') ? s.tod : 'day';
+        G.mapMode = (s.mapMode === 'north' || s.mapMode === 'nav') ? s.mapMode : 'nav';
       }
     } catch (e) { }
   }
   function saveStats() {
     try {
       localStorage.setItem(STATS_KEY, JSON.stringify({
-        money: G.stats.money, count: G.stats.count, ratingSum: G.stats.ratingSum, tod: G.tod,
+        money: G.stats.money, count: G.stats.count, ratingSum: G.stats.ratingSum, tod: G.tod, mapMode: G.mapMode,
         earned: G.stats.earned || 0, vehicles: ownedVehicles(), equipped: G.stats.equipped || 'basic'
       }));
     } catch (e) { }
@@ -562,6 +758,11 @@
     btnTurnL: $('#btnTurnL'), btnTurnR: $('#btnTurnR'),
     mini: $('#mini'), muteBtn: $('#muteBtn'),
     btnLeft: $('#btnLeft'), btnRight: $('#btnRight'), btnGas: $('#btnGas'), btnBrake: $('#btnBrake'), btnHorn: $('#btnHorn'),
+    fuelBtn: $('#fuelBtn'), fuelTx: $('#fuelBtn .fbTx'), fuelSub: $('#fuelBtn .fbSub'),
+    mealBtn: $('#mealBtn'), mealTx: $('#mealBtn .mbTx'), mealSub: $('#mealBtn .mbSub'),
+    fuelPill: $('#fuelPill'), fuelFill: $('#fuelFill'), fuelVal: $('#fuelVal'),
+    hungerPill: $('#hungerPill'), hungerFill: $('#hungerFill'), hungerVal: $('#hungerVal'),
+    mapWrap: $('#mapWrap'), bigMap: $('#bigMap'), bigMapWrap: $('#bigMapWrap'),
     callWrap: null, callCard: null, settleWrap: null,
     flash: $('#flash'), bootErr: $('#bootErr'), vig: $('#vig')
   };
@@ -663,19 +864,101 @@
     settle: function () {
       [523, 659, 784, 1046].forEach(function (f, i) { AU.blip(f, 0.18, 'triangle', 0.17, i * 0.085); });
     },
+    /* 실제 스쿠터 클락션: 410Hz + 515Hz 두 톤 + 배음, 밴드패스·새추레디드, 짧은 어택/디케이 */
     horn: function () {
+      this.hornOn();
+      var self = this;
+      setTimeout(function () { self.hornOff(); }, 300);
+    },
+    hornOn: function () {
       if (!this.ctx || this.muted) return;
+      if (this.hornNodes) return;
       var ctx = this.ctx, t0 = ctx.currentTime;
-      var g = ctx.createGain();
-      g.gain.setValueAtTime(0.0001, t0);
-      g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.01);
-      g.gain.setValueAtTime(0.16, t0 + 0.24);
-      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
-      g.connect(this.master);
-      [430, 566].forEach(function (f) {
-        var o = ctx.createOscillator(); o.type = 'square'; o.frequency.value = f;
-        o.connect(g); o.start(t0); o.stop(t0 + 0.32);
+      var out = ctx.createGain();
+      out.gain.setValueAtTime(0.0001, t0);
+      out.gain.exponentialRampToValueAtTime(0.17, t0 + 0.014);
+      out.gain.setValueAtTime(0.17, t0 + 0.03);
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 1120; bp.Q.value = 0.9;
+      var sh = ctx.createWaveShaper();
+      var curve = new Float32Array(256);
+      for (var i = 0; i < 256; i++) { var x = i / 128 - 1; curve[i] = Math.tanh(x * 2.2); }
+      sh.curve = curve;
+      var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 180;
+      bp.connect(sh); sh.connect(hp); hp.connect(out); out.connect(this.master);
+      var oscs = [];
+      [[410, 'sawtooth', 0.52], [515, 'sawtooth', 0.40], [820, 'square', 0.14], [205, 'triangle', 0.20]].forEach(function (t) {
+        var o = ctx.createOscillator(); o.type = t[1]; o.frequency.value = t[0];
+        var g = ctx.createGain(); g.gain.value = t[2];
+        o.connect(g); g.connect(bp); o.start(t0);
+        oscs.push(o);
       });
+      // 아날로그 클락션의 미세한 떨림
+      var lfo = ctx.createOscillator(); lfo.type = 'sine'; lfo.frequency.value = 6.2;
+      var lg = ctx.createGain(); lg.gain.value = 2.4;
+      lfo.connect(lg); lg.connect(oscs[0].frequency); lg.connect(oscs[1].frequency); lfo.start(t0);
+      oscs.push(lfo);
+      this.hornNodes = { out: out, oscs: oscs };
+    },
+    hornOff: function () {
+      var h = this.hornNodes;
+      if (!h || !this.ctx) return;
+      this.hornNodes = null;
+      var ctx = this.ctx, now = ctx.currentTime;
+      try { h.out.gain.cancelScheduledValues(now); h.out.gain.setValueAtTime(Math.max(0.0001, h.out.gain.value), now); h.out.gain.setTargetAtTime(0.0001, now, 0.022); } catch (e) { }
+      var stopAt = now + 0.22;
+      h.oscs.forEach(function (o) { try { o.stop(stopAt); } catch (e) { } });
+    },
+    honk: function () {   // 짧게 "빵빵"
+      var self = this;
+      this.hornOn();
+      setTimeout(function () { self.hornOff(); }, 165);
+      setTimeout(function () { self.hornOn(); }, 300);
+      setTimeout(function () { self.hornOff(); }, 560);
+    },
+    thud: function (power) {
+      if (!this.ctx || this.muted) return;
+      var ctx = this.ctx, t0 = ctx.currentTime, p = clamp(power || 0.7, 0.15, 1.3);
+      var len = Math.floor(ctx.sampleRate * 0.17);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2);
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320 + p * 260;
+      var g = ctx.createGain(); g.gain.value = 0.16 * p;
+      src.connect(lp); lp.connect(g); g.connect(this.master); src.start(t0);
+      var o = ctx.createOscillator(); o.type = 'sine'; o.frequency.setValueAtTime(120, t0);
+      o.frequency.exponentialRampToValueAtTime(58, t0 + 0.16);
+      var og = ctx.createGain(); og.gain.setValueAtTime(0.001, t0);
+      og.gain.exponentialRampToValueAtTime(0.15 * p, t0 + 0.01);
+      og.gain.exponentialRampToValueAtTime(0.001, t0 + 0.19);
+      o.connect(og); og.connect(this.master); o.start(t0); o.stop(t0 + 0.22);
+    },
+    refuel: function () {
+      this.blip(520, 0.1, 'sine', 0.12, 0);
+      this.blip(780, 0.12, 'triangle', 0.12, 0.1);
+      this.blip(1040, 0.18, 'triangle', 0.1, 0.22);
+    },
+    eat: function () {
+      this.blip(660, 0.08, 'triangle', 0.14, 0);
+      this.blip(880, 0.1, 'triangle', 0.12, 0.08);
+      this.blip(1174, 0.16, 'triangle', 0.1, 0.17);
+    },
+    rain: function (on) {
+      if (!this.ctx) return;
+      if (!this.rainNode) {
+        if (!on) return;
+        var ctx = this.ctx, len = Math.floor(ctx.sampleRate * 2.2);
+        var buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+        for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * 0.5;
+        var src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
+        var lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600;
+        var hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 420;
+        var g = ctx.createGain(); g.gain.value = 0.0001;
+        src.connect(lp); lp.connect(hp); hp.connect(g); g.connect(this.master);
+        try { src.start(); } catch (e) { }
+        this.rainNode = { src: src, gain: g };
+      }
+      var t = this.ctx.currentTime;
+      this.rainNode.gain.gain.setTargetAtTime(on ? 0.055 : 0.0001, t, 0.5);
     },
     crash: function () {
       if (!this.ctx || this.muted) return;
@@ -736,6 +1019,9 @@
   var blocks = [], solidRects = [], storesArr = [], destBlocks = [];
   var tod = 'day';
   var lightFade = null;
+  var groundMatRef = null, wetMesh = null, rainGroup = null, rainMat = null, visorEl = null;
+  var bumpMesh = null, bumps = [], gasStations = [], martStores = [], lotBlocks = {};
+  var bubblePool = [];
 
   var LAMP_COL = {
     redOn: 0xff2a18, redOff: 0x1e0808,
@@ -1042,13 +1328,15 @@
     ['철물점', '', '#4e5a68', '#ffe6b3']
   ];
   var STORE_DEFS = [
-    { block: [-1, 0], name: 'GS25 신곡점', menu: '생수 2병 · 도시락', bg: '#0b4c9c', fg: '#ffffff', sign: 'GS25' },
-    { block: [1, 1], name: 'BHC 치킨 의정부점', menu: '후라이드 한마리 + 콜라', bg: '#f5c400', fg: '#3a2200', sign: 'BHC 치킨' },
-    { block: [0, -1], name: '신전떡볶이', menu: '떡볶이 2인분 · 튀김', bg: '#d0261c', fg: '#ffffff', sign: '신전떡볶이' },
-    { block: [-1, 1], name: '김밥천국', menu: '참치김밥 2줄 · 라면', bg: '#f26b1d', fg: '#ffffff', sign: '김밥천국' },
-    { block: [1, -1], name: '카페 어딘가', menu: '아이스 아메리카노 2잔', bg: '#3b2a20', fg: '#f0d9b5', sign: '카페 어딘가' },
-    { block: [2, 0], name: '마라탕 하오츠', menu: '마라탕 2인 · 꿔바로우', bg: '#a3121b', fg: '#ffe9a8', sign: '마라탕' }
+    { block: [-1, 0], name: 'GS25 신곡점', menu: '생수 2병 · 도시락', bg: '#0b4c9c', fg: '#ffffff', sign: 'GS25', tag: 'drink' },
+    { block: [1, 1], name: 'BHC 치킨 의정부점', menu: '후라이드 한마리 + 콜라', bg: '#f5c400', fg: '#3a2200', sign: 'BHC 치킨', tag: 'fried' },
+    { block: [0, -1], name: '신전떡볶이', menu: '떡볶이 2인분 · 튀김', bg: '#d0261c', fg: '#ffffff', sign: '신전떡볶이', tag: 'soup' },
+    { block: [-1, 1], name: '김밥천국', menu: '참치김밥 2줄 · 라면', bg: '#f26b1d', fg: '#ffffff', sign: '김밥천국', tag: 'plain' },
+    { block: [1, -1], name: '카페 어딘가', menu: '아이스 아메리카노 2잔', bg: '#3b2a20', fg: '#f0d9b5', sign: '카페 어딘가', tag: 'drink' },
+    { block: [2, 0], name: '마라탕 하오츠', menu: '마라탕 2인 · 꿔바로우', bg: '#a3121b', fg: '#ffe9a8', sign: '마라탕', tag: 'soup' }
   ];
+  // 주유소 / 편의점 부지 (건물 없이 평평한 로트)
+  var LOT_DEFS = { '0,0': 'gas', '2,-2': 'gas', '0,1': 'mart', '2,2': 'mart' };
 
   function buildCity() {
     scene.fog = new THREE.Fog(0xd6e4ee, 70, 560);
@@ -1112,22 +1400,28 @@
 
     // --- 바닥 (아스팔트) ---
     var groundMat = new THREE.MeshLambertMaterial({ map: makeAsphaltTexture(), color: 0xffffff });
+    groundMatRef = groundMat;
     var ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), groundMat);
     ground.rotation.x = -Math.PI / 2;
     scene.add(ground);
 
     makeLaneMarks();
     makeCityBlocks();
+    makeSpeedBumps();
+    makeGasStations();
+    makeMartStores();
     makeTrafficLights();
     makeTreesAndLamps();
     makeStreetDetail();
     makeSkyline();
     makeNamsan();
     makeClouds();
+    makeRain();
     makeCars();
     makePeds();
     makeBeacons();
     makeHandoverKit();
+    makeHornFx();
     buildCockpit(G.spec || VEH_BY_ID[G.stats.equipped] || VEHICLES[0]);
   }
 
@@ -1320,6 +1614,12 @@
     for (var bi = -GRID; bi <= GRID; bi++) {
       for (var bj = -GRID; bj <= GRID; bj++) {
         var bx = bi * BLOCK, bz = bj * BLOCK;
+        if (LOT_DEFS[bi + ',' + bj]) {
+          // 주유소·편의점 부지: 연석/건물 없이 진입 가능한 평지
+          blocks.push({ i: bi, j: bj, x: bx, z: bz, lot: LOT_DEFS[bi + ',' + bj] });
+          lotBlocks[bi + ',' + bj] = LOT_DEFS[bi + ',' + bj];
+          continue;
+        }
         var plat = new THREE.Mesh(new THREE.BoxGeometry(HALF * 2, CURB_H, HALF * 2), sideMat);
         plat.position.set(bx, CURB_H / 2, bz);
         scene.add(plat);
@@ -1337,6 +1637,7 @@
 
     for (var n = 0; n < blocks.length; n++) {
       var blk = blocks[n];
+      if (blk.lot) continue;   // 주유소·편의점 부지는 건물을 올리지 않는다
       var rnd = mulberry32(1000 + (blk.i + 5) * 37 + (blk.j + 5) * 101);
       makeBlockBuildings(blk, rnd, storeMap[blk.i + ',' + blk.j] || null);
     }
@@ -1372,7 +1673,7 @@
       var b0 = blocks.find(function (b) { return b.i === sd.block[0] && b.j === sd.block[1]; });
       if (!b0) continue;
       storesArr.push({
-        name: sd.name, menu: sd.menu,
+        name: sd.name, menu: sd.menu, tag: sd.tag || 'plain',
         x: (b0.shopX !== undefined ? b0.shopX : b0.x + 9),
         z: b0.z + HALF + 6,
         block: b0
@@ -1386,6 +1687,309 @@
         x: bb.x - 8, z: bb.z + HALF + 6,
         addr: addrOf(bb), block: bb
       });
+    }
+  }
+
+  /* --- 과속방지턱 --- */
+  function makeBumpTexture() {
+    var W = 32, H = 128, c = canvasOf(W, H), x = c.getContext('2d');
+    x.fillStyle = '#17191c'; x.fillRect(0, 0, W, H);
+    x.fillStyle = '#f2b81c';
+    for (var i = -1; i < 10; i++) {
+      var y0 = i * 16;
+      x.beginPath();
+      x.moveTo(0, y0); x.lineTo(W, y0 + 7); x.lineTo(W, y0 + 15); x.lineTo(0, y0 + 8);
+      x.closePath(); x.fill();
+    }
+    var t = texOf(c);
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    return t;
+  }
+
+  function makeSpeedBumps() {
+    var mat = new THREE.MeshLambertMaterial({ map: makeBumpTexture(), color: 0xffffff });
+    var geo = new THREE.CylinderGeometry(0.32, 0.32, 4.4, 12, 1, false, 0, Math.PI);
+    geo.rotateZ(Math.PI / 2);
+    var list = [];
+    function add(x, z, axis) { list.push({ x: x, z: z, axis: axis }); }
+    for (var r = 0; r < ROADS.length; r++) {
+      for (var s = 0; s < ROADS.length - 1; s++) {
+        var mid = (ROADS[s] + ROADS[s + 1]) / 2;
+        for (var li = 0; li < 2; li++) {
+          var off = li === 0 ? -5.4 : 5.4;
+          add(ROADS[r] + off, mid, 'z');     // 남북 도로의 차로별 턱
+          add(mid, ROADS[r] + off, 'x');     // 동서 도로의 차로별 턱
+        }
+      }
+    }
+    bumpMesh = new THREE.InstancedMesh(geo, mat, list.length);
+    var m = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler();
+    var p = new THREE.Vector3(), sc = new THREE.Vector3(1, 1, 1);
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i];
+      b.halfLat = 2.2; b.halfAlong = 0.95; b.at = -99;
+      p.set(b.x, 0.1, b.z);
+      e.set(0, b.axis === 'x' ? Math.PI / 2 : 0, 0); q.setFromEuler(e);
+      m.compose(p, q, sc);
+      bumpMesh.setMatrixAt(i, m);
+    }
+    bumpMesh.instanceMatrix.needsUpdate = true;
+    bumpMesh.frustumCulled = false;
+    scene.add(bumpMesh);
+    bumps = list;
+  }
+
+  /* --- 주유소 · 편의점 로트 --- */
+  var lotParts = [];
+  function lotBox(x, y, z, w, h, d, color, ry) {
+    lotParts.push({ x: x, y: y, z: z, w: w, h: h, d: d, c: color, ry: ry || 0 });
+  }
+  function lotPlane(grp, tex, x, y, z, w, h, rotY) {
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({
+      map: tex, toneMapped: false, side: THREE.DoubleSide
+    }));
+    m.position.set(x, y, z);
+    m.rotation.y = rotY === undefined ? 0 : rotY;
+    grp.add(m);
+    return m;
+  }
+  // 조명이 들어온 유리·간판처럼 항상 밝게 보이는 면
+  function lotGlow(grp, x, y, z, w, h, color, rotY) {
+    var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({
+      color: color, toneMapped: false, side: THREE.DoubleSide
+    }));
+    m.position.set(x, y, z);
+    m.rotation.y = rotY === undefined ? 0 : rotY;
+    grp.add(m);
+    return m;
+  }
+  function findBlock(i, j) {
+    for (var k = 0; k < blocks.length; k++) if (blocks[k].i === i && blocks[k].j === j) return blocks[k];
+    return null;
+  }
+
+  function makeGasStations() {
+    var mainTex = makeSignTexture('주유소', 'SELF · 24\uc2dc\uac04', '#0b6b3a', '#ffffff');
+    var priceTex = makeSignTexture('휘발유 1,690', '경유 1,520', '#123a24', '#d6ffe2');
+    var keys = ['0,0', '2,-2'];
+    for (var s = 0; s < keys.length; s++) {
+      var pp = keys[s].split(',');
+      var blk = findBlock(parseInt(pp[0], 10), parseInt(pp[1], 10));
+      if (!blk) continue;
+      var gx = blk.x, gz = blk.z;
+      var grp = new THREE.Group();
+      grp.position.set(gx, 0, gz);
+      scene.add(grp);
+      // 바닥·주행 레인
+      lotBox(gx, 0.06, gz, 44, 0.12, 44, 0xc8cdd2);
+      lotBox(gx, 0.14, gz, 11, 0.06, 40, 0x8d939a);
+      lotBox(gx, 0.15, gz + 20, 11, 0.04, 3, 0xffd23c);
+      lotBox(gx, 0.15, gz - 20, 11, 0.04, 3, 0xffd23c);
+      // 캐노피
+      lotBox(gx, 5.62, gz, 25, 0.62, 13.5, 0xf3f6f9);
+      lotBox(gx, 5.12, gz, 25.8, 0.52, 14.3, 0x16a05f);
+      lotBox(gx, 6.15, gz, 21, 0.3, 9, 0xd8eeff);
+      // 기둥
+      [[-10.6, -5.6], [10.6, -5.6], [-10.6, 5.6], [10.6, 5.6]].forEach(function (c) {
+        lotBox(gx + c[0], 2.56, gz + c[1], 0.62, 5.12, 0.62, 0xe7ebef);
+        lotBox(gx + c[0], 0.4, gz + c[1], 1.1, 0.8, 1.1, 0xbfc6cc);
+      });
+      // 캐노피 아래 천장 패널 + 조명
+      var ceil = new THREE.Mesh(new THREE.PlaneGeometry(24.6, 13.2), new THREE.MeshBasicMaterial({
+        color: 0xdde8e4, toneMapped: false, side: THREE.DoubleSide
+      }));
+      ceil.rotation.x = Math.PI / 2;
+      ceil.position.set(0, 4.86, 0);
+      grp.add(ceil);
+      [-2.6, 2.6].forEach(function (cz) {
+        var lm = new THREE.Mesh(new THREE.PlaneGeometry(15, 1.0), new THREE.MeshBasicMaterial({
+          color: 0xf8fcff, toneMapped: false, side: THREE.DoubleSide
+        }));
+        lm.rotation.x = Math.PI / 2;
+        lm.position.set(0, 4.80, cz);
+        grp.add(lm);
+      });
+      // 주유기 아일랜드 2기
+      [-5.6, 5.6].forEach(function (ox) {
+        lotBox(gx + ox, 0.18, gz, 1.9, 0.24, 4.4, 0xaeb5bc);
+        lotBox(gx + ox, 1.0, gz, 1.15, 1.6, 2.4, 0xf7f9fb);
+        lotBox(gx + ox, 1.86, gz, 1.3, 0.2, 2.55, 0x16a05f);
+        lotBox(gx + ox, 1.2, gz - 1.23, 0.78, 0.5, 0.08, 0xcfe6ff);
+        lotBox(gx + ox + 0.63, 0.9, gz + 0.8, 0.16, 0.95, 0.16, 0x2b3038);
+      });
+      // 가격 팝 · 기둥
+      lotBox(gx + 15, 7.2, gz - 13, 0.4, 7, 0.4, 0xc0c8ce);
+      lotBox(gx + 15, 6.1, gz - 13, 6.2, 3.4, 0.5, 0x0f3220);
+      lotPlane(grp, priceTex, 15, 6.1, -12.72, 5.7, 2.9, 0);
+      lotPlane(grp, priceTex, 15, 6.1, -13.28, 5.7, 2.9, Math.PI);
+      // 간판: 캐노피 앞지봉 위 큰 표지판 (도로에서 잘 보이게)
+      lotBox(gx, 6.95, gz + 6.95, 13, 2.2, 0.35, 0x0b6b3a);
+      lotPlane(grp, mainTex, 0, 6.95, 7.14, 12.6, 2.0, 0);
+      lotPlane(grp, mainTex, 0, 6.95, 6.76, 12.6, 2.0, Math.PI);
+      lotBox(gx + 13.5, 3.4, gz + 18.5, 0.45, 6.8, 0.45, 0xbfc8ce);
+      lotBox(gx + 13.5, 5.9, gz + 18.5, 6.6, 3.0, 0.42, 0x0b5c34);
+      lotPlane(grp, mainTex, 13.5, 5.9, 18.74, 6.2, 2.7, 0);
+      lotPlane(grp, mainTex, 13.5, 5.9, 18.26, 6.2, 2.7, Math.PI);
+      // 진입 차로 주행 유도선
+      lotBox(gx - 3.6, 0.16, gz + 14, 0.5, 0.03, 9, 0xffd23c);
+      lotBox(gx + 3.6, 0.16, gz + 14, 0.5, 0.03, 9, 0xffd23c);
+      lotBox(gx - 3.6, 0.16, gz - 14, 0.5, 0.03, 9, 0xffd23c);
+      lotBox(gx + 3.6, 0.16, gz - 14, 0.5, 0.03, 9, 0xffd23c);
+      // 입구 볼라드
+      [[-7.2, 20.6], [7.2, 20.6]].forEach(function (c) {
+        lotBox(gx + c[0], 0.55, gz + c[1], 0.3, 1.0, 0.3, 0xffd23c);
+      });
+      gasStations.push({ x: gx, z: gz, name: '주유소', key: keys[s], r: 17 });
+    }
+    if (lotParts.length) buildBoxes(lotParts);
+    lotParts = [];
+  }
+
+  function makeMartStores() {
+    var signTex = makeSignTexture('편의점', '24\uc2dc · \uc0bc\uac01\uae40\ubc25', '#0f6fb8', '#ffffff');
+    var brandTex = makeSignTexture('GS25', '\uc2e0\uace1\uc911\uc559\uc810', '#0b4c9c', '#ffffff');
+    var keys = ['0,1', '2,2'];
+    for (var s = 0; s < keys.length; s++) {
+      var pp = keys[s].split(',');
+      var blk = findBlock(parseInt(pp[0], 10), parseInt(pp[1], 10));
+      if (!blk) continue;
+      var mx = blk.x, mz = blk.z;
+      var grp = new THREE.Group();
+      grp.position.set(mx, 0, mz);
+      scene.add(grp);
+      // 바닥 · 주차/정차 스페이스
+      lotBox(mx, 0.06, mz, 44, 0.12, 44, 0xd0d5da);
+      lotBox(mx, 0.14, mz + 9, 30, 0.06, 16, 0x9aa1a8);
+      lotBox(mx, 0.15, mz + 16.5, 26, 0.04, 2.2, 0xffffff);
+      // 건물
+      lotBox(mx, 2.45, mz - 11, 17, 4.8, 12, 0xeef1f4);
+      lotBox(mx, 4.55, mz - 11, 17.6, 0.9, 12.6, 0x1a9e5f);
+      lotBox(mx, 1.75, mz - 4.92, 12.6, 2.4, 0.18, 0xa9ddf4);
+      lotGlow(grp, 0, 1.72, -4.78, 12.2, 2.1, 0xbfe8ff);
+      lotGlow(grp, 0, 2.82, -4.77, 11.4, 0.28, 0xffe9b8);
+      lotBox(mx - 6.35, 1.9, mz - 4.9, 0.3, 3.6, 0.3, 0xf7f9fb);
+      lotBox(mx + 6.35, 1.9, mz - 4.9, 0.3, 3.6, 0.3, 0xf7f9fb);
+      lotBox(mx, 0.5, mz - 4.6, 13.4, 0.5, 0.9, 0xb3bac1);
+      lotBox(mx, 3.08, mz - 4.0, 13, 0.26, 2.2, 0x1a9e5f);
+      lotBox(mx, 0.16, mz - 3.4, 7, 0.2, 2.2, 0xd6dade);
+      // 실외 냉장고 · 진열
+      [[-7.6, -1.6], [7.6, -1.6]].forEach(function (c) {
+        lotBox(mx + c[0], 0.86, mz + c[1], 1.6, 1.7, 1.3, 0xdfe6ec);
+        lotBox(mx + c[0], 1.72, mz + c[1], 1.66, 0.14, 1.36, 0x2f86e0);
+      });
+      lotBox(mx - 11.5, 0.6, mz + 12, 1.2, 1.2, 1.2, 0x3f8fd8);
+      lotPlane(grp, signTex, 0, 4.55, -4.62, 9.6, 1.9, 0);
+      lotPlane(grp, brandTex, 5.4, 4.55, -4.61, 4.4, 1.1, 0);
+      // 입구 표지 기둥(도로에서 보이게)
+      lotBox(mx + 12.5, 3.1, mz + 13.5, 0.42, 6.2, 0.42, 0xc4ccd2);
+      lotBox(mx + 12.5, 5.6, mz + 13.5, 5.4, 2.4, 0.4, 0x0f6fb8);
+      lotPlane(grp, signTex, 12.5, 5.6, 13.74, 5.0, 2.2, 0);
+      lotPlane(grp, signTex, 12.5, 5.6, 13.26, 5.0, 2.2, Math.PI);
+      martStores.push({ x: mx, z: mz + 11, name: 'GS25 신곡중앙점', key: keys[s], r: 13, bx: mx, bz: mz });
+    }
+    if (lotParts.length) buildBoxes(lotParts);
+    lotParts = [];
+  }
+
+  /* --- 비(우천) 연출: 빗줄기 + 젖은 노면 광택 --- */
+  function makeWetTexture() {
+    var W = 256, H = 256, c = canvasOf(W, H), x = c.getContext('2d');
+    for (var i = 0; i < 96; i++) {
+      var px = Math.random() * W, py = Math.random() * H;
+      var w = rand(2, 9), h = rand(14, 74);
+      var g = x.createLinearGradient(px, py, px, py + h);
+      g.addColorStop(0, 'rgba(190,215,240,0)');
+      g.addColorStop(0.5, 'rgba(205,228,248,' + (0.10 + Math.random() * 0.16).toFixed(2) + ')');
+      g.addColorStop(1, 'rgba(190,215,240,0)');
+      x.fillStyle = g;
+      x.fillRect(px, py, w, h);
+    }
+    return texOf(c, 10, 10);
+  }
+
+  function makeRain() {
+    var N = 900;
+    var geo = new THREE.BufferGeometry();
+    var pos = new Float32Array(N * 2 * 3);
+    var spd = new Float32Array(N * 2);
+    var topV = new Float32Array(N * 2);
+    var lenV = new Float32Array(N * 2);
+    for (var i = 0; i < N; i++) {
+      var x = rand(-30, 30), y = rand(0, 34), z = rand(-30, 30);
+      var sp = rand(26, 40), l = rand(0.6, 1.6);
+      for (var v = 0; v < 2; v++) {
+        var k = i * 2 + v;
+        pos[k * 3] = x; pos[k * 3 + 1] = y; pos[k * 3 + 2] = z;
+        spd[k] = sp; topV[k] = v; lenV[k] = l;
+      }
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('aSpd', new THREE.BufferAttribute(spd, 1));
+    geo.setAttribute('aTop', new THREE.BufferAttribute(topV, 1));
+    geo.setAttribute('aLen', new THREE.BufferAttribute(lenV, 1));
+    rainMat = new THREE.ShaderMaterial({
+      uniforms: { uTime: { value: 0 }, uCam: { value: new THREE.Vector3() } },
+      vertexShader: [
+        'attribute float aSpd;',
+        'attribute float aTop;',
+        'attribute float aLen;',
+        'uniform float uTime;',
+        'uniform vec3 uCam;',
+        'void main(){',
+        '  vec3 p = position;',
+        '  p.y = mod(p.y - uTime * aSpd, 34.0);',
+        '  p.x += aTop * 0.20;',
+        '  p.y += aTop * aLen;',
+        '  vec3 w = vec3(p.x + uCam.x, p.y, p.z + uCam.z);',
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(w, 1.0);',
+        '}'
+      ].join('\n'),
+      fragmentShader: 'void main(){ gl_FragColor = vec4(0.73,0.84,0.95,0.52); }',
+      transparent: true, depthWrite: false
+    });
+    rainGroup = new THREE.LineSegments(geo, rainMat);
+    rainGroup.frustumCulled = false;
+    rainGroup.visible = false;
+    scene.add(rainGroup);
+
+    wetMesh = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshBasicMaterial({
+      map: makeWetTexture(), transparent: true, opacity: 0, depthWrite: false,
+      blending: THREE.AdditiveBlending, toneMapped: false
+    }));
+    wetMesh.rotation.x = -Math.PI / 2;
+    wetMesh.position.y = 0.075;
+    wetMesh.visible = false;
+    wetMesh.frustumCulled = false;
+    scene.add(wetMesh);
+  }
+
+  function makeHornFx() {
+    // 경적 반응 말풍선은 사용 시점에 생성(최대 8개)
+    bubblePool = [];
+  }
+
+  /* --- 헬멧 바이저 빗방울(HUD) --- */
+  function buildVisor() {
+    var v = document.getElementById('visor');
+    if (!v || v.getAttribute('data-built')) return;
+    v.setAttribute('data-built', '1');
+    visorEl = v;
+    var rnd = mulberry32(20261123);
+    for (var i = 0; i < 30; i++) {
+      var d = document.createElement('div');
+      d.className = 'drop';
+      var s = 3 + rnd() * 9;
+      d.style.width = s.toFixed(1) + 'px';
+      d.style.height = (s * (1.05 + rnd() * 0.55)).toFixed(1) + 'px';
+      var x;
+      if (rnd() < 0.72) x = (rnd() < 0.5 ? rnd() * 28 : 72 + rnd() * 28);
+      else x = rnd() * 100;
+      d.style.left = clamp(x, 0, 98).toFixed(1) + '%';
+      d.style.top = (rnd() * 94).toFixed(1) + '%';
+      d.style.animationDuration = (4.5 + rnd() * 9).toFixed(1) + 's';
+      d.style.animationDelay = (-rnd() * 12).toFixed(1) + 's';
+      d.style.opacity = (0.45 + rnd() * 0.5).toFixed(2);
+      v.appendChild(d);
     }
   }
 
@@ -2830,6 +3434,12 @@
       hemiSky: 0x2c4d7c, hemiGround: 0x14161c, hemi: 0.22,
       sun: 0.14, sunCol: 0x9fbde6, amb: 0.06, sunPos: [90, 170, 130],
       stars: 0.85, glow: 0.95, sign: 1.3, winMode: 'night', tower: 1.0, camLight: 0.22, fogFar: 560, cloud: 0.14
+    },
+    rain: {
+      top: 0x2b3846, bot: 0x7f909e, fog: 0x6a7c8b, near: 42, far: 380,
+      hemiSky: 0x9fb3c6, hemiGround: 0x39424b, hemi: 0.46,
+      sun: 0.30, sunCol: 0xc6d8e8, amb: 0.11, sunPos: [70, 200, -50],
+      stars: 0, glow: 0.70, sign: 1.2, winMode: 'rain', tower: 0.5, camLight: 0.16, cloud: 1.0
     }
   };
 
@@ -2860,7 +3470,7 @@
     if (laneMatY) laneMatY.color.setHex(name === 'night' ? 0xffd22e : (name === 'sunset' ? 0xffc83c : 0xffd21f));
     if (laneMatW) laneMatW.color.setHex(name === 'night' ? 0xe8f0ff : (name === 'sunset' ? 0xfff1dc : 0xf4f8ff));
     if (laneMatC) laneMatC.color.setHex(name === 'night' ? 0xe4ecf7 : (name === 'sunset' ? 0xfff3e2 : 0xf2f6fa));
-    if (headlight) headlight.intensity = name === 'night' ? 5 : (name === 'sunset' ? 0.35 : 0.08);
+    if (headlight) headlight.intensity = name === 'night' ? 5 : (name === 'sunset' ? 0.35 : (name === 'rain' ? 2.2 : 0.08));
     if (towerTopMat) towerTopMat.color.setHex(name === 'night' ? 0x8fe0ff : 0x9fd8ff);
     if (G.towerGroup) {
       var tl = G.towerGroup.getObjectByName('towerLight');
@@ -2872,8 +3482,8 @@
       cloudGroup.visible = cop > 0.03;
       for (var ci = 0; ci < cloudGroup.children.length; ci++) {
         var cl = cloudGroup.children[ci];
-        cl.material.opacity = (cl.userData.baseOp || 0.8) * cop;
-        cl.material.color.setHex(name === 'sunset' ? 0xffd3ab : (name === 'night' ? 0x2b3a55 : 0xffffff));
+        cl.material.opacity = (cl.userData.baseOp || 0.8) * (name === 'rain' ? 1.0 : cop);
+        cl.material.color.setHex(name === 'sunset' ? 0xffd3ab : (name === 'night' ? 0x2b3a55 : (name === 'rain' ? 0x69767f : 0xffffff)));
       }
     }
     if (sunSprite) {
@@ -2883,6 +3493,16 @@
       sunSprite.position.set(sd.x * 620, Math.max(60, sd.y * 620), sd.z * 620);
     }
     applyWindowColors(c.winMode);
+    // ---- 우천(비) 연출 ----
+    if (name === 'rain' && sunSprite) sunSprite.material.opacity = 0;
+    if (groundMatRef) groundMatRef.color.setHex(name === 'rain' ? 0x8b95a1 : 0xffffff);
+    if (wetMesh) {
+      wetMesh.visible = (name === 'rain');
+      wetMesh.material.opacity = (name === 'rain' ? 0.28 : 0);
+    }
+    if (rainGroup) rainGroup.visible = (name === 'rain');
+    if (visorEl) visorEl.classList.toggle('on', name === 'rain');
+    AU.rain(name === 'rain');
     updateTodChips();
     if (!silent) saveStats();
   }
@@ -2900,6 +3520,9 @@
       } else if (mode === 'sunset') {
         if (d.lit) { col.setHex(0xffb877); col.multiplyScalar(0.5 + d.warm * 0.6); }
         else col.setHex(0x2b3a4d);
+      } else if (mode === 'rain') {
+        if (d.lit) { col.setHex(0xffcf9a); col.multiplyScalar(0.42 + d.warm * 0.5); }
+        else col.setHex(0x28323f);
       } else {
         col.setHex(d.lit ? 0x8fa6bd : 0x3a4d63);
         col.multiplyScalar(0.72 + d.warm * 0.4);
@@ -2916,6 +3539,9 @@
         } else if (mode === 'sunset') {
           if (gd.lit) { col.setHex(0xffcda0); col.multiplyScalar(0.8 + gd.warm * 0.35); }
           else col.setHex(0x8a97a8);
+        } else if (mode === 'rain') {
+          if (gd.lit) { col.setHex(0xc9d6e0); col.multiplyScalar(0.62 + gd.warm * 0.25); }
+          else col.setHex(0x7c8894);
         } else {
           col.setHex(gd.lit ? 0xd6e6ef : 0xa9bcc9);
           col.multiplyScalar(0.86 + gd.warm * 0.22);
@@ -2933,8 +3559,15 @@
     }
   }
 
-  /* ---------- 주문 ---------- */
-  function newOrder() {
+  /* ---------- 주문 · 멀티 콜 배차판 ---------- */
+  var FOOD_TAGS = {
+    soup: { key: 'soup', label: '🍲 국물 주의 · 흔들림 민감', bonus: 800, fragile: 1.9, temp: 1.0 },
+    fried: { key: 'fried', label: '🍗 튀김 · 온도 유지', bonus: 300, fragile: 1.0, temp: 1.35 },
+    drink: { key: 'drink', label: '☕ 음료 · 급정거 주의', bonus: 600, fragile: 2.1, temp: 1.0 },
+    plain: { key: 'plain', label: '🍱 도시락 · 기본 배달', bonus: 0, fragile: 1.0, temp: 1.0 }
+  };
+
+  function makeOffer() {
     var store, dest, dist, tries = 0;
     do {
       store = pick(storesArr);
@@ -2943,58 +3576,95 @@
       tries++;
     } while ((dist < 150 || dist > 700) && tries < 40);
     if (dist < 120) dist = 120;
-    var fee = 2500 + Math.round(dist * 2.3 / 100) * 100;
-    // 신호 대기·교차로 감속 시간을 넉넉히 포함한 제한시간 (300m≈200초, 500m≈250초)
+    var tag = FOOD_TAGS[store.tag] || FOOD_TAGS.plain;
+    var fee = 2500 + Math.round(dist * 2.3 / 100) * 100 + tag.bonus;
     var limit = Math.round(125 + dist / 4.0);
-    G.pending = {
-      store: store, dest: dest, dist: dist, fee: fee, limit: limit,
-      timeLeft: limit, violations: 0, collisions: 0, food: 100, late: false,
-      picked: false, startedAt: G.time
+    return {
+      store: store, dest: dest, destLabel: dest.addr, dist: dist, fee: fee, limit: limit,
+      timeLeft: limit, violations: 0, collisions: 0, bumps: 0, food: 100, late: false,
+      picked: false, startedAt: G.time, mannerCount: 0,
+      tag: tag.key, tagLabel: tag.label, fragile: tag.fragile, temp: tag.temp
     };
-    G.pending.destLabel = dest.addr;
-    return G.pending;
+  }
+
+  function newOrder() { return makeOffer(); }
+
+  function makeOffers() {
+    var n = 2 + (Math.random() < 0.6 ? 1 : 0);
+    var out = [];
+    for (var i = 0; i < n; i++) {
+      var o = null;
+      for (var t = 0; t < 10; t++) {
+        o = makeOffer();
+        var dup = false;
+        for (var k = 0; k < out.length; k++) if (out[k].store.name === o.store.name) dup = true;
+        if (!dup) break;
+      }
+      out.push(o);
+    }
+    G.offers = out;
+    G.selOffer = 0;
+    return out;
+  }
+
+  function renderBoard() {
+    var list = $('#bdList');
+    if (!list) return;
+    var h = '';
+    for (var i = 0; i < G.offers.length; i++) {
+      var o = G.offers[i];
+      var tag = FOOD_TAGS[o.tag] || FOOD_TAGS.plain;
+      h += '<button class="bc' + (i === G.selOffer ? ' sel' : '') + '" data-offer="' + i + '">' +
+        '<div class="bcTop"><div style="min-width:0"><div class="bcName">' + o.store.name + '</div>' +
+        '<div class="bcMenu">' + o.store.menu + '</div></div>' +
+        '<div class="bcFee">' + Math.round(o.fee).toLocaleString('ko-KR') + '원<small>기본 배달료</small></div></div>' +
+        '<div class="bcDest">→ ' + o.destLabel + '</div>' +
+        '<div class="bcMeta"><span class="bcTag ' + tag.key + '">' + tag.label + '</span>' +
+        '<span class="bcDist">' + Math.round(o.dist) + 'm · 약 ' + Math.max(1, Math.round(o.limit / 60)) + '분</span>' +
+        '<span class="bcChk">✓ 선택됨</span></div></button>';
+    }
+    list.innerHTML = h;
+    var cnt = $('#bdCount');
+    if (cnt) cnt.textContent = G.offers.length + '건';
+    var acc = $('#bdAccept');
+    if (acc && G.offers[G.selOffer]) acc.textContent = '수락 · ₩' + Math.round(G.offers[G.selOffer].fee).toLocaleString('ko-KR');
+    var tip = $('#bdTip');
+    if (tip) tip.innerHTML = G.tod === 'rain'
+      ? '☔ 지금은 비 · <b>우천 할증 +₩800</b>이 정산에 붙어요'
+      : '콜을 골라 수락하면 가게로 출발해요 · 음식 상태에 따라 팁이 달라져요';
   }
 
   function showCall() {
-    var o = G.pending;
-    if (!o) return;
-    $('#ccStore').textContent = o.store.name;
-    $('#ccMenu').textContent = o.store.menu;
-    $('#ccDest').textContent = o.destLabel;
-    $('#ccDist').textContent = Math.round(o.dist) + 'm';
-    $('#ccDistSub').textContent = '신호 대기 포함 약 ' + Math.max(1, Math.round(o.limit / 60)) + '분';
-    $('#ccTime').textContent = Math.floor(o.limit / 60) + '분 ' + (o.limit % 60 ? (o.limit % 60) + '초' : '');
-    $('#ccFee').innerHTML = Math.round(o.fee).toLocaleString('ko-KR') + '<span>원</span>';
-    $('#callWrap').classList.remove('hidden');
+    if (!G.offers || !G.offers.length) makeOffers();
+    if (G.selOffer >= G.offers.length) G.selOffer = 0;
+    renderBoard();
+    $('#boardWrap').classList.remove('hidden');
     G.mode = 'offer';
     G.paused = true;
     G.speed = 0;
     G.throttle = 0;
+    UI.fuelBtn.classList.remove('on'); fuelBtnOn = false;
+    UI.mealBtn.classList.remove('on'); mealBtnOn = false;
+    drawMini();
     AU.call();
   }
 
-  function declineCall() {
-    $('#callWrap').classList.add('hidden');
-    G.paused = false;
-    G.pending = null;
-    G.mode = 'idle';
-    toast('다음 콜을 찾는 중…', '잠시만요', 1200);
-    setTimeout(function () {
-      if (!G.running || G.mode !== 'idle') return;
-      newOrder();
-      showCall();
-    }, 850);
+  function selectOffer(i) {
+    if (!G.offers || !G.offers[i]) return;
+    G.selOffer = i;
+    renderBoard();
+    AU.blip(880, 0.06, 'sine', 0.12, 0);
   }
 
-  function acceptCall() {
-    var o = G.pending;
-    if (!o) return;
-    $('#callWrap').classList.add('hidden');
+  function acceptOffer(i) {
+    var o = G.offers[i === undefined ? G.selOffer : i];
+    if (!o) return false;
+    $('#boardWrap').classList.add('hidden');
     G.paused = false;
     G.mode = 'toStore';
     G.order = o;
     G.food = 100;
-    G.pending = null;
+    G.offers = [];
     o.timeLeft = o.limit;
     o.startedAt = G.time;
     placeNpcs();
@@ -3008,7 +3678,23 @@
     UI.orderDist.textContent = '▲ ' + Math.round(dist2(o.store.x, o.store.z, G.pos.x, G.pos.z)) + 'm';
     if (UI.mapDist) UI.mapDist.textContent = '가게 ' + Math.round(dist2(o.store.x, o.store.z, G.pos.x, G.pos.z)) + 'm';
     AU.blip(780, 0.12, 'triangle', 0.2, 0);
-    toast('콜 수락!', withRo(o.store.name) + ' 이동', 1600);
+    toast('콜 수락!', withRo(o.store.name) + ' 이동 · ' + o.tagLabel, 1800);
+    return true;
+  }
+
+  function acceptCall() { return acceptOffer(G.selOffer); }
+
+  function declineCall() {
+    $('#boardWrap').classList.add('hidden');
+    G.paused = false;
+    G.offers = [];
+    G.mode = 'idle';
+    toast('배차판 새로고침…', '다른 콜을 찾는 중', 1200);
+    setTimeout(function () {
+      if (!G.running || G.mode !== 'idle' || G.garageOpen || G.mapOpen || G.eating) return;
+      makeOffers();
+      showCall();
+    }, 850);
   }
 
   function setOrderHUD(phase, store, dest) {
@@ -3043,6 +3729,8 @@
     G.throttle = 0;
     beaconDrop.grp.visible = false;
     UI.stopHint.classList.remove('on');
+    UI.fuelBtn.classList.remove('on'); fuelBtnOn = false;
+    UI.mealBtn.classList.remove('on'); mealBtnOn = false;
     if (UI.mapDist) UI.mapDist.textContent = '—';
     showSettle(o);
     AU.settle();
@@ -3057,7 +3745,10 @@
     var safety = clamp(800 - o.violations * 350 - o.collisions * 120, -600, 800);
     var mannerCnt = Math.min(3, o.mannerCount || 0);
     var manner = mannerCnt * 100;
-    var total = Math.max(0, Math.round(o.fee + timeBonus + tip + safety + manner));
+    // 우천 할증: 비 오는 날 배달은 +700~1,000원
+    var rainBonus = (G.tod === 'rain') ? (760 + Math.round(o.dist / 100) * 40) : 0;
+    rainBonus = clamp(rainBonus, 0, 1000);
+    var total = Math.max(0, Math.round(o.fee + timeBonus + tip + safety + manner + rainBonus));
     var stars = 5.0 - o.violations * 0.4 - o.collisions * 0.1 - (100 - clamp(o.food, 0, 100)) / 100 * 1.4 - (o.late ? 1.0 : 0);
     stars = Math.round(clamp(stars, 1, 5) * 10) / 10;
 
@@ -3081,6 +3772,10 @@
     $('#stManner').textContent = '+' + manner.toLocaleString('ko-KR') + '원';
     $('#stManner').parentNode.classList.toggle('zero', manner === 0);
     $('#stMannerK').textContent = mannerCnt > 0 ? '매너 보너스 · 방향지시등 ' + mannerCnt + '회' : '매너 보너스 · 방향지시등';
+    if ($('#stRainRow')) {
+      $('#stRainRow').style.display = rainBonus > 0 ? '' : 'none';
+      $('#stRain').textContent = '+' + rainBonus.toLocaleString('ko-KR') + '원';
+    }
     $('#stTotal').textContent = Math.round(total).toLocaleString('ko-KR') + '원';
 
     var full = Math.floor(stars), half = stars - full >= 0.5;
@@ -3124,9 +3819,9 @@
     setOrderHUD('콜 대기중', '콜을 기다리는 중…', '가게 · 목적지 정보');
     UI.orderTimer.textContent = '--:--';
     G.pending = null;
-    newOrder();
+    makeOffers();
     setTimeout(function () {
-      if (!G.running) return;
+      if (!G.running || G.garageOpen || G.mapOpen || G.eating) return;
       showCall();
     }, 420);
   }
@@ -3208,8 +3903,21 @@
     bindHold(UI.btnBrake, function () { input.brake = true; }, function () { input.brake = false; });
     bindHold(UI.btnLeft, function () { input.left = true; }, function () { input.left = false; });
     bindHold(UI.btnRight, function () { input.right = true; }, function () { input.right = false; });
-    UI.btnHorn.addEventListener('pointerdown', function (e) { e.preventDefault(); AU.horn(); });
-    UI.btnHorn.addEventListener('click', function () { AU.horn(); });
+    var hornDown = function (e) {
+      if (e) e.preventDefault();
+      UI.btnHorn.classList.add('down');
+      AU.hornOn();
+      hornBlast();
+    };
+    var hornUp = function () {
+      UI.btnHorn.classList.remove('down');
+      AU.hornOff();
+    };
+    UI.btnHorn.addEventListener('pointerdown', hornDown);
+    UI.btnHorn.addEventListener('pointerup', hornUp);
+    UI.btnHorn.addEventListener('pointercancel', hornUp);
+    UI.btnHorn.addEventListener('pointerleave', hornUp);
+    UI.btnHorn.addEventListener('click', function (e) { e.preventDefault(); });
 
     if (UI.handBtn) {
       UI.handBtn.addEventListener('pointerdown', function (e) {
@@ -3229,8 +3937,47 @@
     if (UI.btnTurnR) UI.btnTurnR.addEventListener('click', function (e) { e.preventDefault(); setTurn(1); });
 
     document.querySelectorAll('.chip.tod').forEach(function (el) {
-      el.addEventListener('click', function () { setTOD(el.getAttribute('data-tod')); AU.blip(620, 0.07, 'sine', 0.1, 0); });
+      el.addEventListener('click', function () {
+        setTOD(el.getAttribute('data-tod'));
+        AU.blip(620, 0.07, 'sine', 0.1, 0);
+        updateTodChips();
+      });
     });
+
+    /* --- 미니맵 · 전체 지도 · 내비 모드 --- */
+    if (UI.mapWrap) UI.mapWrap.addEventListener('click', function (e) { e.stopPropagation(); openBigMap(); });
+    var bmClose = $('#bmClose');
+    if (bmClose) bmClose.addEventListener('click', function (e) { e.stopPropagation(); closeBigMap(); });
+    if (UI.bigMapWrap) UI.bigMapWrap.addEventListener('click', function (e) { if (e.target === UI.bigMapWrap) closeBigMap(); });
+    if (UI.bigMap) UI.bigMap.addEventListener('click', function () { closeBigMap(); });
+    var mm1 = $('#mapModeBtn');
+    if (mm1) mm1.addEventListener('click', function (e) { e.stopPropagation(); toggleMapMode(); });
+    var mm2 = $('#mapModeBtn2');
+    if (mm2) mm2.addEventListener('click', function (e) { e.stopPropagation(); toggleMapMode(); });
+
+    /* --- 주유 · 편의점 식사 --- */
+    if (UI.fuelBtn) {
+      UI.fuelBtn.addEventListener('pointerdown', function () { UI.fuelBtn.classList.add('press'); });
+      UI.fuelBtn.addEventListener('pointerup', function () { UI.fuelBtn.classList.remove('press'); });
+      UI.fuelBtn.addEventListener('pointercancel', function () { UI.fuelBtn.classList.remove('press'); });
+      UI.fuelBtn.addEventListener('click', function (e) { e.preventDefault(); doRefuel(); });
+    }
+    if (UI.mealBtn) {
+      UI.mealBtn.addEventListener('pointerdown', function () { UI.mealBtn.classList.add('press'); });
+      UI.mealBtn.addEventListener('pointerup', function () { UI.mealBtn.classList.remove('press'); });
+      UI.mealBtn.addEventListener('pointercancel', function () { UI.mealBtn.classList.remove('press'); });
+      UI.mealBtn.addEventListener('click', function (e) { e.preventDefault(); openMeal(); });
+    }
+    var mClose = $('#mClose');
+    if (mClose) mClose.addEventListener('click', function () { closeMeal(); });
+    var mCancel = $('#mCancel');
+    if (mCancel) mCancel.addEventListener('click', function () { closeMeal(); });
+    var mItems = $('#mItems');
+    if (mItems) mItems.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('button[data-meal]') : null;
+      if (b) eatMeal(b.getAttribute('data-meal'));
+    });
+
     UI.muteBtn.addEventListener('click', function () {
       G.soundOn = !G.soundOn;
       AU.init();
@@ -3247,7 +3994,7 @@
       else if (k === 'ArrowDown' || k === 's' || k === 'S') { input.brake = true; e.preventDefault(); }
       else if (k === 'ArrowLeft' || k === 'a' || k === 'A') { input.left = true; e.preventDefault(); }
       else if (k === 'ArrowRight' || k === 'd' || k === 'D') { input.right = true; e.preventDefault(); }
-      else if (k === ' ' || k === 'Spacebar') { AU.horn(); e.preventDefault(); }
+      else if (k === ' ' || k === 'Spacebar') { if (!e.repeat) { hornDown(); } e.preventDefault(); }
       else if (k === 'q' || k === 'Q' || k === 'z' || k === 'Z') { if (!e.repeat) setTurn(-1); e.preventDefault(); }
       else if (k === 'e' || k === 'E' || k === 'c' || k === 'C') { if (!e.repeat) setTurn(1); e.preventDefault(); }
     });
@@ -3257,35 +4004,37 @@
       else if (k === 'ArrowDown' || k === 's' || k === 'S') input.brake = false;
       else if (k === 'ArrowLeft' || k === 'a' || k === 'A') input.left = false;
       else if (k === 'ArrowRight' || k === 'd' || k === 'D') input.right = false;
+      else if (k === ' ' || k === 'Spacebar') hornUp();
     });
-    window.addEventListener('blur', function () { input.gas = input.brake = input.left = input.right = false; });
+    window.addEventListener('blur', function () {
+      input.gas = input.brake = input.left = input.right = false;
+      AU.hornOff();
+      UI.btnHorn.classList.remove('down');
+    });
 
     document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   }
 
   /* ---------- UI/모달 빌드 ---------- */
   function buildModals() {
-    var call = document.createElement('div');
-    call.className = 'sheetWrap hidden';
-    call.id = 'callWrap';
-    call.innerHTML = [
-      '<div id="callCard">',
-      '  <div class="ccHead">',
-      '    <div><div class="t">새로운 콜</div><div class="ttl">배달 요청</div></div>',
-      '    <div class="badge">픽업 대기</div>',
-      '  </div>',
-      '  <div class="ccBody">',
-      '    <div class="ccRow"><span class="k">픽업</span><span class="v"><span id="ccStore"></span><small id="ccMenu"></small></span></div>',
-      '    <div class="ccRow"><span class="k">도착</span><span class="v"><span id="ccDest"></span><small>아파트 정문 앞</small></span></div>',
-      '    <div class="ccRow"><span class="k">거리</span><span class="v"><span id="ccDist"></span><small id="ccDistSub"></small></span></div>',
-      '    <div class="ccRow"><span class="k">제한시간</span><span class="v" id="ccTime"></span></div>',
-      '    <div class="ccFee"><span class="lb">배달료</span><span class="amt" id="ccFee"></span></div>',
-      '  </div>',
-      '  <div class="ccBtns"><button id="ccDecline">거절</button><button id="ccAccept">수락</button></div>',
+    var board = document.createElement('div');
+    board.className = 'sheetWrap hidden';
+    board.id = 'boardWrap';
+    board.innerHTML = [
+      '<div id="board">',
+      '  <div class="bdHead"><div><div class="k">CALL BOARD · 배차판</div><div class="h">콜을 골라 잡으세요</div></div><div class="cnt" id="bdCount">3건</div></div>',
+      '  <div class="bdList" id="bdList"></div>',
+      '  <div class="bdFoot"><button id="bdSkip">새로고침</button><button id="bdAccept">수락</button></div>',
+      '  <div class="bdTip" id="bdTip"></div>',
       '</div>'
     ].join('\n');
-    $('#app').insertBefore(call, $('#start'));
-    call.addEventListener('click', function (e) { if (e.target === call) return; });
+    $('#app').insertBefore(board, $('#start'));
+    board.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('button[data-offer]') : null;
+      if (b) selectOffer(parseInt(b.getAttribute('data-offer'), 10));
+    });
+    $('#bdAccept').addEventListener('click', function () { acceptCall(); });
+    $('#bdSkip').addEventListener('click', declineCall);
 
     var settle = document.createElement('div');
     settle.className = 'sheetWrap hidden';
@@ -3299,6 +4048,7 @@
       '    <div class="stLine"><span class="k">음식 상태 팁</span><span class="v" id="stTip"></span></div>',
       '    <div class="stLine"><span class="k" id="stSignK">안전 배달 보너스</span><span class="v" id="stSign"></span></div>',
       '    <div class="stLine"><span class="k" id="stMannerK">매너 보너스 · 방향지시등</span><span class="v" id="stManner"></span></div>',
+      '    <div class="stLine" id="stRainRow"><span class="k">☔ 우천 할증</span><span class="v" id="stRain"></span></div>',
       '    <div class="stDash"></div>',
       '    <div class="stTotal"><span class="k">정산 금액</span><span class="v" id="stTotal"></span></div>',
       '    <div class="stStars"><span class="s" id="stStars"></span><span class="n" id="stNum"></span><span class="lb" id="stMsg"></span></div>',
@@ -3310,8 +4060,6 @@
     ].join('\n');
     $('#app').insertBefore(settle, $('#start'));
 
-    $('#ccAccept').addEventListener('click', acceptCall);
-    $('#ccDecline').addEventListener('click', declineCall);
     $('#stNext').addEventListener('click', nextCall);
   }
 
@@ -3555,12 +4303,279 @@
   function hit(kind, strength) {
     if (G.hitCooldown > 0) return;
     G.hitCooldown = 0.45;
-    G.food = clamp(G.food - (kind === 'car' ? 6 : 5), 0, 100);
+    var frag = (G.order && G.order.fragile) || 1;
+    var dmg = (kind === 'car' ? 6 : 5) * (frag > 1.4 ? 1.5 : 1);
+    G.food = clamp(G.food - dmg, 0, 100);
     if (G.order) G.order.collisions++;
     G.shake = Math.min(0.09, 0.035 + strength * 0.02);
     G.bobV -= 0.9;
     AU.crash();
-    warn(kind === 'car' ? '차량 충돌!' : '연석 충돌!', '음식이 흔들렸어요 · 음식 상태 -5', 1400);
+    warn(kind === 'car' ? '차량 충돌!' : '연석 충돌!', '음식이 흔들렸어요 · 음식 상태 -' + Math.round(dmg), 1400);
+  }
+
+  /* ---------- 과속방지턱 ---------- */
+  function bumpPass(b, kmh, silent) {
+    var spd = (kmh === undefined ? Math.abs(G.speed) * 3.6 : kmh);
+    if (!silent) G.bumps = (G.bumps || 0) + 1;
+    var frag = (G.order && G.order.fragile) || 1;
+    if (spd < 19) {
+      G.bobV -= 0.14;
+      G.shake = Math.max(G.shake, 0.014);
+      AU.thud(0.32);
+      return { slow: true, dmg: 0, kmh: Math.round(spd) };
+    }
+    var f = clamp((spd - 19) / 28, 0, 1);
+    var dmg = (1.1 + f * 2.7) * frag;
+    G.food = clamp(G.food - dmg, 0, 100);
+    if (G.order) { G.order.food = G.food; G.order.bumps = (G.order.bumps || 0) + 1; }
+    G.bobV -= 0.55 + f * 0.35;
+    G.shake = Math.max(G.shake, 0.032 + f * 0.04);
+    AU.thud(0.7 + f * 0.5);
+    if (!silent) toast('덜컹!', frag > 1.4 ? (G.order && G.order.tag === 'drink' ? '음료가 흔들렸어요 · 급정거 주의' : '음식이 흔들렸어요 · 국물 주의') : '음식이 흔들렸어요 · 음식 -' + Math.round(dmg), 1100);
+    return { slow: false, dmg: Math.round(dmg * 10) / 10, kmh: Math.round(spd) };
+  }
+
+  function checkBumps() {
+    var spd = Math.abs(G.speed);
+    for (var i = 0; i < bumps.length; i++) {
+      var b = bumps[i];
+      if (Math.abs(b.x - G.pos.x) > 3.8 || Math.abs(b.z - G.pos.z) > 3.8) continue;
+      var lat = b.axis === 'z' ? Math.abs(G.pos.x - b.x) : Math.abs(G.pos.z - b.z);
+      var alo = b.axis === 'z' ? Math.abs(G.pos.z - b.z) : Math.abs(G.pos.x - b.x);
+      if (lat > b.halfLat + 0.35 || alo > b.halfAlong + 0.6) continue;
+      if (G.time - b.at < 1.3) continue;
+      b.at = G.time;
+      bumpPass(b, spd * 3.6);
+    }
+  }
+
+  /* ---------- 경적 반응(보행자·차량) ---------- */
+  function makeBubbleTexture(text, bg, fg) {
+    var W = 128, H = 96, c = canvasOf(W, H), x = c.getContext('2d');
+    var bx = 6, by = 4, bw = W - 12, bh = H - 26;
+    x.clearRect(0, 0, W, H);
+    x.fillStyle = bg;
+    roundRect(x, bx, by, bw, bh, 18); x.fill();
+    x.strokeStyle = 'rgba(20,40,60,.28)'; x.lineWidth = 3; x.stroke();
+    x.beginPath(); x.moveTo(W * 0.40, by + bh - 3); x.lineTo(W * 0.5, H - 3); x.lineTo(W * 0.62, by + bh - 3);
+    x.closePath(); x.fillStyle = bg; x.fill();
+    x.fillStyle = fg;
+    x.font = '900 ' + (text.length > 1 ? 38 : 44) + 'px ' + KR_FONT;
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.fillText(text, W / 2, by + bh / 2 + 2);
+    var t = texOf(c);
+    t.minFilter = THREE.LinearFilter;
+    return t;
+  }
+
+  function bubbleFor(kind) {
+    for (var i = 0; i < bubblePool.length; i++) if (bubblePool[i].kind === kind && !bubblePool[i].on) return bubblePool[i];
+    if (bubblePool.length >= 8) return null;
+    var tex = kind === 'car' ? makeBubbleTexture('빵!', '#fff3d8', '#8a4a00')
+      : makeBubbleTexture('!', '#eef8ff', '#0d3b66');
+    var mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false, opacity: 1 });
+    var sp = new THREE.Sprite(mat);
+    if (kind === 'car') sp.scale.set(1.95, 1.46, 1);
+    else sp.scale.set(1.25, 0.94, 1);
+    sp.visible = false;
+    sp.kind = kind;
+    sp.on = false;
+    sp.renderOrder = 6;
+    scene.add(sp);
+    bubblePool.push(sp);
+    return sp;
+  }
+
+  function hornBlast() {
+    G.honkAt = G.time;
+    var fx = Math.sin(G.yaw), fz = -Math.cos(G.yaw);
+    var pedN = 0, carN = 0;
+    for (var i = 0; i < pedData.length; i++) {
+      var p = pedData[i];
+      if (p.px === undefined) continue;
+      var dx = p.px - G.pos.x, dz = p.pz - G.pos.z;
+      var d = Math.sqrt(dx * dx + dz * dz);
+      if (d > 26) continue;
+      var dot = d > 0.01 ? (dx * fx + dz * fz) / d : 1;
+      if (d > 9.5 && dot < 0.30) continue;
+      p.startle = Math.max(p.startle || 0, d < 12 ? 1.3 : 0.95);
+      p.startleYaw = Math.atan2(-dx, -dz);
+      var s = bubbleFor('ped');
+      if (s) { s.ref = i; s.life = 1.15; s.on = true; s.visible = true; s.material.opacity = 1; }
+      pedN++;
+    }
+    for (var c = 0; c < carData.length; c++) {
+      var cd = carData[c];
+      if (cd.wx === undefined) continue;
+      var dx2 = cd.wx - G.pos.x, dz2 = cd.wz - G.pos.z;
+      var d2 = Math.sqrt(dx2 * dx2 + dz2 * dz2);
+      if (d2 > 30) continue;
+      var dot2 = d2 > 0.01 ? (dx2 * fx + dz2 * fz) / d2 : 1;
+      if (d2 > 10.5 && dot2 < 0.35) continue;
+      cd.honkT = Math.max(cd.honkT || 0, 1.6);
+      var s2 = bubbleFor('car');
+      if (s2) { s2.ref = c; s2.life = 1.3; s2.on = true; s2.visible = true; s2.material.opacity = 1; }
+      carN++;
+    }
+    G.hornPeds = pedN; G.hornCars = carN;
+    return { peds: pedN, cars: carN };
+  }
+
+  function bubblesOn() {
+    var n = 0;
+    for (var i = 0; i < bubblePool.length; i++) if (bubblePool[i].on) n++;
+    return n;
+  }
+
+  function updateHornFx(dt) {
+    for (var i = 0; i < bubblePool.length; i++) {
+      var s = bubblePool[i];
+      if (!s.on) continue;
+      s.life -= dt;
+      if (s.life <= 0) { s.on = false; s.visible = false; continue; }
+      var tx, ty, tz;
+      if (s.kind === 'ped') {
+        var p = pedData[s.ref];
+        if (!p || p.px === undefined) { s.on = false; s.visible = false; continue; }
+        tx = p.px; tz = p.pz; ty = (p.py || 0) + 2.2;
+      } else {
+        var c = carData[s.ref];
+        if (!c || c.wx === undefined) { s.on = false; s.visible = false; continue; }
+        tx = c.wx; tz = c.wz; ty = 2.5;
+      }
+      s.position.set(tx, ty + (1.3 - s.life) * 0.22, tz);
+      s.material.opacity = clamp(s.life / 0.4, 0, 1);
+    }
+  }
+
+  /* ---------- 주유소 · 편의점 ---------- */
+  var REFUEL_COST = 1500;
+  var MEALS = [
+    { id: 'onigiri', name: '삼각김밥 2개', em: '🍙', price: 1500, fill: 22, desc: '간단히 한 끼 · 배고픔 +22%' },
+    { id: 'noodle', name: '컵라면', em: '🍜', price: 2200, fill: 32, desc: '따끈한 국물 · 배고픔 +32%' },
+    { id: 'lunch', name: '도시락', em: '🍱', price: 4500, fill: 55, desc: '든든하게 · 배고픔 +55%' }
+  ];
+  var fuelBtnOn = false, mealBtnOn = false;
+
+  function nearestStation() {
+    var best = null, bd = 1e9;
+    for (var i = 0; i < gasStations.length; i++) {
+      var d = dist2(gasStations[i].x, gasStations[i].z, G.pos.x, G.pos.z);
+      if (d < bd) { bd = d; best = gasStations[i]; }
+    }
+    return best ? { st: best, d: bd } : null;
+  }
+  function nearestMart() {
+    var best = null, bd = 1e9;
+    for (var i = 0; i < martStores.length; i++) {
+      var d = dist2(martStores[i].x, martStores[i].z, G.pos.x, G.pos.z);
+      if (d < bd) { bd = d; best = martStores[i]; }
+    }
+    return best ? { st: best, d: bd } : null;
+  }
+  function serviceReady() {
+    return !!(G.running && !G.paused && !G.handover && !G.eating && G.mode !== 'offer' && G.mode !== 'settle');
+  }
+
+  function refreshServiceBtns() {
+    var ok = serviceReady();
+    var ns = ok ? nearestStation() : null;
+    var fuelOn = !!(ns && ns.d < ns.st.r && Math.abs(G.speed) < 1.8);
+    if (fuelOn) G.nearStation = ns.st;
+    if (fuelOn !== fuelBtnOn) { fuelBtnOn = fuelOn; UI.fuelBtn.classList.toggle('on', fuelOn); }
+    if (fuelOn) {
+      var full = G.fuel > 99.5;
+      var free = G.stats.money < REFUEL_COST;
+      var tx = full ? '⛽ 연료 가득' : (free ? '⛽ 응급 주유 · 무료' : '⛽ 주유하기 · ' + fmtWon(REFUEL_COST));
+      var sub = full ? '지금은 만땅이에요' : (free ? '잔액 부족 · 35%까지 채워요' : '연료 ' + Math.round(G.fuel) + '% → 100%');
+      if (UI.fuelTx.textContent !== tx) UI.fuelTx.textContent = tx;
+      if (UI.fuelSub.textContent !== sub) UI.fuelSub.textContent = sub;
+    }
+    var nm = ok ? nearestMart() : null;
+    var mealOn = !!(nm && nm.d < nm.st.r && Math.abs(G.speed) < 1.8);
+    if (mealOn) G.nearMart = nm.st;
+    if (mealOn !== mealBtnOn) { mealBtnOn = mealOn; UI.mealBtn.classList.toggle('on', mealOn); }
+    if (mealOn) {
+      var sub2 = '배고픔 ' + Math.round(G.hunger) + '% · 삼각김밥 · 라면 · 도시락';
+      if (UI.mealSub.textContent !== sub2) UI.mealSub.textContent = sub2;
+    }
+  }
+
+  function doRefuel() {
+    var ns = nearestStation();
+    if (!ns || ns.d > ns.st.r) return false;
+    if (G.fuel > 99.5) { toast('연료가 가득해요', '지금은 주유가 필요 없어요', 1400); return false; }
+    var free = G.stats.money < REFUEL_COST;
+    if (free) G.fuel = Math.max(G.fuel, 35);
+    else { G.stats.money -= REFUEL_COST; G.fuel = 100; }
+    G.refuels = (G.refuels || 0) + 1;
+    G.fuelEmptyWarned = false;
+    saveStats(); refreshStatsUI();
+    AU.refuel();
+    toast(free ? '응급 주유 완료' : '주유 완료!', free ? '잔액이 부족해 35%까지 무료로 채웠어요' : fmtWon(REFUEL_COST) + ' 결제 · 연료 100%', 2100);
+    refreshServiceBtns(); updateHUD();
+    return true;
+  }
+
+  function openMeal() {
+    if (G.eating) return false;
+    var nm = nearestMart();
+    if (!nm || nm.d > nm.st.r) return false;
+    G.eating = true;
+    G.mealPrevPaused = !!G.paused;
+    G.paused = true;
+    G.speed = 0; G.throttle = 0; input.gas = false;
+    renderMeal();
+    $('#mealWrap').classList.remove('hidden');
+    UI.mealBtn.classList.remove('on'); mealBtnOn = false;
+    AU.blip(720, 0.08, 'sine', 0.1, 0);
+    return true;
+  }
+  function closeMeal() {
+    $('#mealWrap').classList.add('hidden');
+    if (G.eating) {
+      G.eating = false;
+      G.paused = G.mealPrevPaused || false;
+    }
+    refreshServiceBtns();
+    updateHUD();
+  }
+  function renderMeal() {
+    var h = '';
+    for (var i = 0; i < MEALS.length; i++) {
+      var m = MEALS[i];
+      var can = G.stats.money >= m.price;
+      var hot = G.hunger < 45 && m.fill >= 32;
+      h += '<button class="mi' + (hot ? ' hot' : '') + '" data-meal="' + m.id + '"' + (can ? '' : ' disabled') + '>' +
+        '<span class="em">' + m.em + '</span>' +
+        '<span class="mid"><span class="nm">' + m.name + '</span><span class="ds">' + m.desc + '</span></span>' +
+        '<span class="pr">' + fmtWon(m.price) + '</span></button>';
+    }
+    if (G.stats.money < MEALS[0].price) {
+      h += '<button class="mi hot" data-meal="free"><span class="em">🍞</span>' +
+        '<span class="mid"><span class="nm">무료 응급 간식</span><span class="ds">잔액 부족 · 배고픔 +18%</span></span>' +
+        '<span class="pr">무료</span></button>';
+    }
+    $('#mItems').innerHTML = h;
+    $('#mMoney').textContent = fmtWon(G.stats.money);
+    $('#mHunger').textContent = Math.round(G.hunger) + '%';
+    $('#mTitle').textContent = G.hunger < 40 ? '배고파요 — 뭐 먹을까요?' : '무엇을 먹을까요?';
+  }
+  function eatMeal(id) {
+    var m = null;
+    if (id === 'free') m = { name: '무료 응급 간식', price: 0, fill: 18 };
+    else for (var i = 0; i < MEALS.length; i++) if (MEALS[i].id === id) m = MEALS[i];
+    if (!m) return false;
+    if (m.price > G.stats.money) return false;
+    G.stats.money -= m.price;
+    G.hunger = clamp(G.hunger + m.fill, 0, 100);
+    G.hungerWarned = false;
+    G.meals = (G.meals || 0) + 1;
+    saveStats(); refreshStatsUI();
+    AU.eat();
+    toast('냠냠! ' + m.name, '배고픔 ' + Math.round(G.hunger) + '% · 기운이 난다', 1900);
+    closeMeal();
+    return true;
   }
 
   function updateGame(dt) {
@@ -3576,31 +4591,36 @@
     G.steer = lerp(G.steer, targetSteer, 1 - Math.exp(-dt * 7));
 
     var moving = G.mode === 'toStore' || G.mode === 'toCustomer';
-    var canDrive = G.running && !G.paused && G.mode !== 'offer' && G.mode !== 'settle' && !G.handover;
+    var canDrive = G.running && !G.paused && G.mode !== 'offer' && G.mode !== 'settle' && !G.handover && !G.eating;
     var oldSpeed = G.speed;
     var yawDelta = 0;
+    var wet = (G.tod === 'rain');
+    var grip = wet ? 0.74 : 1;
+    G.gripNow = grip;
+    var topNow = G.fuel <= 0 ? 3.6 : (G.hunger <= 0 ? SP.top * 0.84 : SP.top);
 
     if (canDrive) {
       if (G.throttle > 0.02) {
-        G.speed += (SP.accel * (1 - Math.max(0, G.speed) / SP.top * 0.62)) * G.throttle * dt;
+        G.speed += (SP.accel * (1 - Math.max(0, G.speed) / topNow * 0.62)) * G.throttle * dt * (wet ? 0.90 : 1);
       }
       if (G.brake > 0.02) {
-        G.speed -= SP.brake * G.brake * dt;
+        G.speed -= SP.brake * G.brake * dt * grip;
       }
       // 자연 감속
-      var drag = 0.42 + 0.02 * Math.abs(G.speed);
+      var drag = (0.42 + 0.02 * Math.abs(G.speed)) * (wet ? 1.12 : 1);
       G.speed -= G.speed * drag * dt;
       if (G.speed < 0) G.speed = Math.max(G.speed, -3.2);
       if (Math.abs(G.speed) < 0.06 && G.throttle < 0.02) G.speed = 0;
-      G.speed = clamp(G.speed, -3.2, SP.top);
-      // 급정거 판정
+      G.speed = clamp(G.speed, -3.2, topNow);
+      // 급정거 판정 (국물·음료는 더 민감)
       if (oldSpeed > 7 && (oldSpeed - G.speed) / Math.max(dt, 0.001) > 18) {
-        G.food = clamp(G.food - 2.4, 0, 100);
+        var fr = (G.order && G.order.fragile) || 1;
+        G.food = clamp(G.food - 2.4 * (fr > 1.4 ? 1.7 : 1), 0, 100);
         G.bobV -= 0.35;
       }
       // 조향
       var spd = Math.abs(G.speed);
-      var steerRate = SP.steer * clamp(spd / 7, 0, 1) * (G.speed < 0 ? -1 : 1);
+      var steerRate = SP.steer * clamp(spd / 7, 0, 1) * (G.speed < 0 ? -1 : 1) * (wet ? 0.85 : 1);
       G.yaw += G.steer * steerRate * dt;
       yawDelta = G.steer * steerRate * dt;
       G.lean = lerp(G.lean, G.steer * 0.36 * clamp(spd / 11, 0, 1), 1 - Math.exp(-dt * 6));
@@ -3615,6 +4635,24 @@
     // 월드 경계
     G.pos.x = clamp(G.pos.x, -EDGE + 3, EDGE - 3);
     G.pos.z = clamp(G.pos.z, -EDGE + 3, EDGE - 3);
+
+    // 과속방지턱 통과
+    if (canDrive) checkBumps();
+
+    // 연료 · 배고픔 소모 (배달 4~5건마다 한 번 채우는 정도)
+    if (canDrive) {
+      var moved = Math.abs(G.speed) * dt;
+      G.fuel = clamp(G.fuel - moved * 0.042 - dt * 0.028, 0, 100);
+      G.hunger = clamp(G.hunger - moved * 0.050 - dt * 0.020, 0, 100);
+    }
+    if (G.fuel <= 0 && !G.fuelEmptyWarned) {
+      G.fuelEmptyWarned = true;
+      warn('연료 소진!', '비상 저속 주행 · ⛽ 주유소에서 주유하세요', 3200);
+    }
+    if (G.hunger <= 22 && !G.hungerWarned) {
+      G.hungerWarned = true;
+      warn('배고파요', '🏪 편의점에서 식사하세요 · 최고속도 소폭 감소', 3000);
+    }
 
     G.hitCooldown = Math.max(0, G.hitCooldown - dt);
     G.shake = Math.max(0, G.shake - dt * 0.32);
@@ -3689,8 +4727,8 @@
         o.late = true;
         warn('시간 초과!', '지금이라도 배달하면 정산돼요', 2600);
       }
-      // 음식 온도 서서히 하락
-      G.food = clamp(G.food - 0.28 * dt, 0, 100);
+      // 음식 온도 서서히 하락 (튀김은 온도에 민감)
+      G.food = clamp(G.food - 0.28 * (o.temp || 1) * dt, 0, 100);
       o.food = G.food;
 
       var tgt = G.mode === 'toStore' ? o.store : o.dest;
@@ -3745,6 +4783,15 @@
     UI.foodVal.textContent = Math.round(G.food) + '%';
     UI.foodFill.style.width = G.food + '%';
     UI.foodFill.className = G.food > 70 ? '' : (G.food > 40 ? 'warn' : 'bad');
+    UI.fuelFill.style.width = G.fuel + '%';
+    UI.fuelFill.className = G.fuel > 35 ? '' : (G.fuel > 12 ? 'warn' : 'bad');
+    UI.fuelVal.textContent = Math.round(G.fuel) + '%';
+    UI.fuelPill.classList.toggle('low', G.fuel <= 15);
+    UI.hungerFill.style.width = G.hunger + '%';
+    UI.hungerFill.className = G.hunger > 35 ? '' : (G.hunger > 15 ? 'warn' : 'bad');
+    UI.hungerVal.textContent = Math.round(G.hunger) + '%';
+    UI.hungerPill.classList.toggle('low', G.hunger <= 20);
+    refreshServiceBtns();
     if (G.stats.count || G.stats.money) refreshStatsUI();
     if (toastT > 0) { toastT -= 0.1; if (toastT <= 0) UI.toast.classList.remove('on'); }
     if (warnT > 0) { warnT -= 0.1; if (warnT <= 0) UI.warn.classList.remove('on'); }
@@ -3979,6 +5026,13 @@
       if (lead < 30) {
         var lv = Math.sqrt(Math.max(0, 2 * 7.0 * Math.max(0, lead - CAR_LEN - 2.7)));
         if (lv < wantV) wantV = lv;
+      }
+      // 경적 반응: 앞차가 브레이크등을 켜고 살짝 감속
+      if (c.honkT > 0) {
+        c.honkT -= dt;
+        if (c.honkT < 0) c.honkT = 0;
+        var hv = Math.max(0, c.v - 2.4);
+        if (hv < wantV) wantV = hv;
       }      var acc = wantV > c.v ? 3.2 : 8.0;
       if (c.v < wantV) c.v = Math.min(wantV, c.v + acc * dt);
       else c.v = Math.max(wantV, c.v - acc * dt);
@@ -4018,9 +5072,12 @@
       carP.set(wx + fx * 2.0 - fz * 0.62, 0.62, wz + fz * 2.0 + fx * 0.62);
       carM.compose(carP, carQ, carS); carHead.setMatrixAt(i * 2 + 1, carM);
       carP.set(wx - fx * 2.02 + fz * 0.62, 0.72, wz - fz * 2.02 - fx * 0.62);
+      var tls = c.honkT > 0 ? 2.2 : 1;
+      carS.set(tls, tls, tls);
       carM.compose(carP, carQ, carS); carTail.setMatrixAt(i * 2, carM);
       carP.set(wx - fx * 2.02 - fz * 0.62, 0.72, wz - fz * 2.02 + fx * 0.62);
       carM.compose(carP, carQ, carS); carTail.setMatrixAt(i * 2 + 1, carM);
+      carS.set(1, 1, 1);
     }
     carBody.instanceMatrix.needsUpdate = true;
     carRoof.instanceMatrix.needsUpdate = true;
@@ -4051,8 +5108,11 @@
     for (var i = 0; i < pedData.length; i++) {
       var p = pedData[i];
       // ---------- 상태 진행 ----------
+      if (p.startle > 0) p.startle = Math.max(0, p.startle - dt);
+      var scared = p.startle > 0;
+      var slowK = scared ? 0.12 : 1;
       if (p.kind === 'walk') {
-        p.u += p.speed * dt / (PED_OFF * 2);
+        p.u += p.speed * slowK * dt / (PED_OFF * 2);
         if (p.u >= 1) {
           p.u -= 1;
           p.k = (p.k + 1) % 4;
@@ -4062,7 +5122,8 @@
         p.waitT += dt;
         if (pedSignalOK(p.cross.axis)) { p.kind = 'cross'; p.cu = 0; }
       } else {
-        p.cu += p.speed * 1.75 * dt / p.cross.len;
+        p.cu += p.speed * 1.75 * slowK * dt / p.cross.len;
+        if (scared) p.cu = Math.max(0, p.cu - dt * 0.055);   // 차도에서 인도 쪽으로 물러선다
         if (p.cu >= 1) {
           p.bi += p.cross.di; p.bj += p.cross.dj; p.k = p.cross.k; p.u = 0;
           p.kind = 'walk'; p.cross = null;
@@ -4094,11 +5155,13 @@
 
       // ---------- 걷기 모션 ----------
       var moving = p.kind !== 'wait';
+      if (scared && p.startleYaw !== undefined) yaw = p.startleYaw;
       var cyc = clockT * (5.0 + p.speed * 1.7) + p.phase;
       p.px = x; p.pz = z; p.py = y; p.pyaw = yaw;
       var sw = moving ? Math.sin(cyc) * 0.52 : Math.sin(clockT * 1.5 + p.phase) * 0.05;
       var sw2 = moving ? Math.sin(cyc + Math.PI) * 0.52 : -sw;
       var bob = moving ? Math.abs(Math.sin(cyc)) * 0.042 : 0;
+      if (scared) y += Math.abs(Math.sin(clockT * 17)) * 0.05;
 
       pedP.set(x, y + bob, z);
       pedQ.setFromEuler(pedE.set(0, yaw, 0));
@@ -4112,8 +5175,8 @@
       put(pedMesh.hair, i, 0, 1.585, -0.012, 0, 0, 1, 0.94, 1.02);
       put(pedMesh.leg, i * 2, -0.115, 0.82, 0, sw, 0);
       put(pedMesh.leg, i * 2 + 1, 0.115, 0.82, 0, sw2, 0);
-      put(pedMesh.arm, i * 2, -0.262, 1.345, 0, sw2 * 0.85, 0.13);
-      put(pedMesh.arm, i * 2 + 1, 0.262, 1.345, 0, sw * 0.85, -0.13);
+      put(pedMesh.arm, i * 2, -0.262, 1.345, 0, scared ? 2.5 : sw2 * 0.85, 0.13);
+      put(pedMesh.arm, i * 2 + 1, 0.262, 1.345, 0, scared ? 2.5 : sw * 0.85, -0.13);
     }
     for (var nm in pedMesh) pedMesh[nm].instanceMatrix.needsUpdate = true;
   }
@@ -4257,84 +5320,324 @@
     phoneTex.needsUpdate = true;
   }
 
-  /* ---------- 미니맵 ---------- */
+  /* ---------- 미니맵 · 전체 지도 ---------- */
+  function iconFuel(c, x, y, r) {
+    c.save();
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2);
+    c.fillStyle = '#0f7a46'; c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.92)'; c.lineWidth = Math.max(1, r * 0.18); c.stroke();
+    var w = r * 0.80, h = r * 1.12;
+    c.fillStyle = '#ffffff';
+    c.fillRect(x - w * 0.34, y - h * 0.50, w * 0.62, h);
+    c.fillStyle = '#0f7a46';
+    c.fillRect(x - w * 0.24, y - h * 0.36, w * 0.42, h * 0.24);
+    c.fillStyle = '#ffffff';
+    c.fillRect(x + w * 0.26, y - h * 0.44, w * 0.16, h * 0.64);
+    c.fillRect(x + w * 0.26, y + h * 0.14, w * 0.32, h * 0.14);
+    c.restore();
+  }
+  function iconMart(c, x, y, r) {
+    c.save();
+    c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2);
+    c.fillStyle = '#155aa8'; c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.92)'; c.lineWidth = Math.max(1, r * 0.18); c.stroke();
+    var w = r * 1.44;
+    c.fillStyle = '#ffffff';
+    c.beginPath();
+    c.moveTo(x - w * 0.50, y - r * 0.14);
+    c.lineTo(x + w * 0.50, y - r * 0.14);
+    c.lineTo(x + w * 0.38, y - r * 0.60);
+    c.lineTo(x - w * 0.38, y - r * 0.60);
+    c.closePath(); c.fill();
+    c.fillRect(x - w * 0.40, y - r * 0.08, w * 0.80, r * 0.62);
+    c.fillStyle = '#155aa8';
+    c.fillRect(x - w * 0.10, y + r * 0.12, w * 0.20, r * 0.42);
+    c.restore();
+  }
+  function drawPinMark(c, x, y, col, r) {
+    r = r || 6.5;
+    c.save();
+    c.beginPath(); c.arc(x, y - r * 1.15, r, 0, Math.PI * 2);
+    c.fillStyle = col; c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.92)'; c.lineWidth = 1.7; c.stroke();
+    c.beginPath();
+    c.moveTo(x - r * 0.52, y - r * 0.45);
+    c.lineTo(x, y + r * 0.62);
+    c.lineTo(x + r * 0.52, y - r * 0.45);
+    c.closePath();
+    c.fillStyle = col; c.fill();
+    c.restore();
+  }
+  function snapRoad(v) {
+    var best = ROADS[0], bd = 1e9;
+    for (var i = 0; i < ROADS.length; i++) {
+      var d = Math.abs(v - ROADS[i]);
+      if (d < bd) { bd = d; best = ROADS[i]; }
+    }
+    return best;
+  }
+  // 도로망을 따라가는 개략 경로
+  function routeTo(ax, az, bx, bz) {
+    var rax = snapRoad(ax), raz = snapRoad(az), rbx = snapRoad(bx), rbz = snapRoad(bz);
+    var useX = Math.abs(ax - rax) < Math.abs(az - raz);
+    var startX = useX ? rax : ax, startZ = useX ? az : raz;
+    var useX2 = Math.abs(bx - rbx) < Math.abs(bz - rbz);
+    var endX = useX2 ? rbx : bx, endZ = useX2 ? bz : rbz;
+    var pts = [[ax, az], [startX, startZ]];
+    if (Math.abs(startX - endX) > 1 && Math.abs(startZ - endZ) > 1) pts.push([endX, startZ]);
+    pts.push([endX, endZ], [bx, bz]);
+    return pts;
+  }
+
+  function paintMap(c, W, H, cfg) {
+    var big = !!cfg.big, k = cfg.k, cx = cfg.cx, cy = cfg.cy;
+    var nav = !!cfg.nav;
+    function P(wx, wz) {
+      if (nav) {
+        var dx = wx - G.pos.x, dz = wz - G.pos.z;
+        var cs = Math.cos(G.yaw), sn = Math.sin(G.yaw);
+        return [cx + (dx * cs + dz * sn) * k, cy + (-dx * sn + dz * cs) * k];
+      }
+      return [cx + (wx - cfg.ox) * k, cy + (wz - cfg.oz) * k];
+    }
+    c.clearRect(0, 0, W, H);
+    var bg = c.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, big ? '#0c1422' : '#081019');
+    bg.addColorStop(1, big ? '#080d15' : '#05090f');
+    c.fillStyle = bg; c.fillRect(0, 0, W, H);
+
+    // 블록
+    var i, b, p1, p2, x0, y0, bw, bh;
+    for (i = 0; i < blocks.length; i++) {
+      b = blocks[i];
+      p1 = P(b.x - HALF, b.z - HALF); p2 = P(b.x + HALF, b.z + HALF);
+      x0 = Math.min(p1[0], p2[0]); y0 = Math.min(p1[1], p2[1]);
+      bw = Math.abs(p2[0] - p1[0]); bh = Math.abs(p2[1] - p1[1]);
+      if (x0 > W + 4 || y0 > H + 4 || x0 + bw < -4 || y0 + bh < -4) continue;
+      c.fillStyle = b.lot === 'gas' ? 'rgba(24,105,64,.55)' : (b.lot === 'mart' ? 'rgba(26,78,126,.55)' : 'rgba(35,48,65,.9)');
+      c.fillRect(x0, y0, bw, bh);
+      c.strokeStyle = b.lot ? 'rgba(130,220,190,.30)' : 'rgba(120,155,195,.16)';
+      c.lineWidth = 1;
+      c.strokeRect(x0 + 0.5, y0 + 0.5, Math.max(1, bw - 1), Math.max(1, bh - 1));
+    }
+
+    // 도로: 케이싱 → 아스팔트 → 중앙 점선
+    var roadW = ROADW * k;
+    var a, b2;
+    c.lineCap = 'butt';
+    c.strokeStyle = 'rgba(0,0,0,.6)'; c.lineWidth = roadW + 3;
+    for (i = 0; i < ROADS.length; i++) {
+      a = P(ROADS[i], -EDGE); b2 = P(ROADS[i], EDGE);
+      c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+      a = P(-EDGE, ROADS[i]); b2 = P(EDGE, ROADS[i]);
+      c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+    }
+    c.strokeStyle = big ? '#33455b' : '#293949'; c.lineWidth = roadW;
+    for (i = 0; i < ROADS.length; i++) {
+      a = P(ROADS[i], -EDGE); b2 = P(ROADS[i], EDGE);
+      c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+      a = P(-EDGE, ROADS[i]); b2 = P(EDGE, ROADS[i]);
+      c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+    }
+    c.strokeStyle = 'rgba(255,206,64,.50)';
+    c.lineWidth = Math.max(1, 0.85 * k);
+    c.setLineDash([Math.max(2, 5 * k), Math.max(2, 5 * k)]);
+    for (i = 0; i < ROADS.length; i++) {
+      a = P(ROADS[i], -EDGE); b2 = P(ROADS[i], EDGE);
+      c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+      a = P(-EDGE, ROADS[i]); b2 = P(EDGE, ROADS[i]);
+      c.beginPath(); c.moveTo(a[0], a[1]); c.lineTo(b2[0], b2[1]); c.stroke();
+    }
+    c.setLineDash([]);
+    // 교차로 노드
+    c.fillStyle = 'rgba(150,190,230,.20)';
+    for (i = 0; i < ROADS.length; i++) {
+      for (var j = 0; j < ROADS.length; j++) {
+        var np = P(ROADS[i], ROADS[j]);
+        if (np[0] < -8 || np[1] < -8 || np[0] > W + 8 || np[1] > H + 8) continue;
+        c.beginPath(); c.arc(np[0], np[1], Math.max(1.4, roadW * 0.5), 0, Math.PI * 2); c.fill();
+      }
+    }
+
+    // 현재 목적지 경로선
+    var tgt = null, tcol = '#ffcf3f';
+    if (G.order && (G.mode === 'toStore' || G.mode === 'toCustomer')) {
+      tgt = G.mode === 'toStore' ? G.order.store : G.order.dest;
+      tcol = G.mode === 'toStore' ? '#ffcf3f' : '#59c8ff';
+    } else if (G.mode === 'offer' && G.offers && G.offers[G.selOffer]) {
+      tgt = G.offers[G.selOffer].store; tcol = '#ffb347';
+    }
+    if (tgt) {
+      var pts = routeTo(G.pos.x, G.pos.z, tgt.x, tgt.z);
+      c.beginPath();
+      for (var q = 0; q < pts.length; q++) {
+        var sp = P(pts[q][0], pts[q][1]);
+        if (q === 0) c.moveTo(sp[0], sp[1]); else c.lineTo(sp[0], sp[1]);
+      }
+      c.strokeStyle = 'rgba(0,0,0,.55)'; c.lineWidth = Math.max(3, 4.6 * Math.max(k, 0.6)); c.stroke();
+      c.strokeStyle = tcol; c.lineWidth = Math.max(1.8, 2.4 * Math.max(k, 0.7));
+      c.setLineDash([Math.max(3, 5 * k), Math.max(2, 3.5 * k)]);
+      c.stroke();
+      c.setLineDash([]);
+    }
+
+    // 가게(픽업) — 주문/배차판에 등장하는 가게
+    var shops = [];
+    if (G.order) shops.push(G.order.store);
+    if (G.mode === 'offer' && G.offers) for (var oi = 0; oi < G.offers.length; oi++) shops.push(G.offers[oi].store);
+    for (var si = 0; si < shops.length; si++) {
+      var shp = P(shops[si].x, shops[si].z);
+      if (shp[0] < -12 || shp[1] < -12 || shp[0] > W + 12 || shp[1] > H + 12) continue;
+      c.beginPath(); c.arc(shp[0], shp[1], big ? 5 : 3.4, 0, Math.PI * 2);
+      c.fillStyle = '#ff7a1a'; c.fill();
+      c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 1.4; c.stroke();
+    }
+
+    // 주유소 · 편의점: 미니맵에서도 항상 표시
+    var ir = big ? 10 : 6.6;
+    for (i = 0; i < gasStations.length; i++) {
+      var gp = P(gasStations[i].x, gasStations[i].z);
+      if (gp[0] < -ir * 2 || gp[1] < -ir * 2 || gp[0] > W + ir * 2 || gp[1] > H + ir * 2) continue;
+      iconFuel(c, gp[0], gp[1], ir);
+      if (big) {
+        c.font = '800 11px ' + KR_FONT; c.textAlign = 'left'; c.textBaseline = 'middle';
+        c.lineWidth = 3; c.strokeStyle = 'rgba(4,10,16,.85)';
+        c.strokeText('주유소', gp[0] + ir + 4, gp[1]);
+        c.fillStyle = '#b9f5d4'; c.fillText('주유소', gp[0] + ir + 4, gp[1]);
+      }
+    }
+    for (i = 0; i < martStores.length; i++) {
+      var mp = P(martStores[i].x, martStores[i].z);
+      if (mp[0] < -ir * 2 || mp[1] < -ir * 2 || mp[0] > W + ir * 2 || mp[1] > H + ir * 2) continue;
+      iconMart(c, mp[0], mp[1], ir);
+      if (big) {
+        c.font = '800 11px ' + KR_FONT; c.textAlign = 'left'; c.textBaseline = 'middle';
+        c.lineWidth = 3; c.strokeStyle = 'rgba(4,10,16,.85)';
+        c.strokeText('편의점', mp[0] + ir + 4, mp[1]);
+        c.fillStyle = '#bfe0ff'; c.fillText('편의점', mp[0] + ir + 4, mp[1]);
+      }
+    }
+
+    // 목적지 핀
+    if (tgt) {
+      var tp = P(tgt.x, tgt.z);
+      if (tp[0] > -20 && tp[1] > -20 && tp[0] < W + 20 && tp[1] < H + 20) {
+        var pulse = (1 + Math.sin(clockT * 4) * 0.10) * (big ? 8 : 6);
+        c.beginPath(); c.arc(tp[0], tp[1], pulse + 4, 0, Math.PI * 2);
+        c.fillStyle = tcol + '33'; c.fill();
+        drawPinMark(c, tp[0], tp[1], tcol, big ? 8 : 6.4);
+      }
+    }
+
+    // 내 위치 · 진행 방향
+    var me = nav ? [cx, cy] : P(G.pos.x, G.pos.z);
+    var ang = nav ? 0 : G.yaw;
+    c.save();
+    c.translate(me[0], me[1]);
+    c.rotate(ang);
+    var ak = big ? 1.15 : 1;
+    c.beginPath();
+    c.moveTo(0, 0); c.arc(0, 0, 30 * ak, -Math.PI / 2 - 0.5, -Math.PI / 2 + 0.5); c.closePath();
+    c.fillStyle = 'rgba(255,190,110,.14)'; c.fill();
+    c.beginPath();
+    c.moveTo(0, -10 * ak); c.lineTo(7.4 * ak, 7.6 * ak); c.lineTo(0, 3.6 * ak); c.lineTo(-7.4 * ak, 7.6 * ak);
+    c.closePath();
+    c.fillStyle = '#ffffff'; c.fill();
+    c.strokeStyle = '#ff7a1a'; c.lineWidth = 2; c.stroke();
+    c.restore();
+
+    if (!big) {
+      var vg = c.createRadialGradient(W / 2, H * 0.60, 40, W / 2, H * 0.60, W * 0.78);
+      vg.addColorStop(0, 'rgba(6,11,18,0)');
+      vg.addColorStop(1, 'rgba(6,11,18,.72)');
+      c.fillStyle = vg; c.fillRect(0, 0, W, H);
+      // 나침반 (내비 모드에서는 북쪽 화살표가 함께 돈다)
+      var ccx = 15, ccy = 15, rr = 7.2;
+      c.save();
+      c.translate(ccx, ccy);
+      if (nav) c.rotate(-G.yaw);
+      c.beginPath();
+      c.moveTo(0, -rr); c.lineTo(rr * 0.56, rr * 0.72); c.lineTo(0, rr * 0.22); c.lineTo(-rr * 0.56, rr * 0.72);
+      c.closePath();
+      c.fillStyle = 'rgba(232,242,255,.92)'; c.fill();
+      c.strokeStyle = 'rgba(0,0,0,.4)'; c.lineWidth = 1; c.stroke();
+      c.restore();
+      c.font = '800 8px ' + KR_FONT;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillStyle = 'rgba(180,205,235,.85)';
+      c.fillText('N', ccx, ccy + 12);
+    }
+  }
+
   function drawMini() {
     var c = miniCtx;
     if (!c) return;
     var W = 216, H = 216;
-    c.save();
-    c.clearRect(0, 0, W, H);
-    c.fillStyle = '#0a1019'; c.fillRect(0, 0, W, H);
+    paintMap(c, W, H, {
+      big: false, nav: G.mapMode === 'nav',
+      cx: W / 2, cy: H * 0.60, k: 0.44,
+      ox: G.pos.x, oz: G.pos.z
+    });
+  }
 
-    var cos = Math.cos(G.yaw), sin = Math.sin(G.yaw);
-    c.save();
-    c.translate(W / 2, H * 0.62);
-    c.scale(1, 1);
-    c.rotate(0);
-    // 월드→화면 변환 (진행 방향이 위로)
-    function tx(wx, wz) {
-      var dx = wx - G.pos.x, dz = wz - G.pos.z;
-      return [dx * cos + dz * sin, -dx * sin + dz * cos];
+  function renderBigMap() {
+    var cv = UI.bigMap;
+    if (!cv) return;
+    var c = cv.getContext('2d');
+    var W = cv.width, H = cv.height;
+    var k = W / (EDGE * 2 + 46);
+    paintMap(c, W, H, { big: true, nav: false, cx: W / 2, cy: H / 2, k: k, ox: 0, oz: 0 });
+    var info = $('#bmInfo');
+    if (info) {
+      var arr = [];
+      var ns = nearestStation(), nm = nearestMart();
+      arr.push('내 위치 ' + Math.round(G.pos.x) + ',' + Math.round(G.pos.z));
+      if (ns) arr.push('⛽ ' + Math.round(ns.d) + 'm');
+      if (nm) arr.push('🏪 ' + Math.round(nm.d) + 'm');
+      if (G.order) {
+        var t = G.mode === 'toStore' ? G.order.store : G.order.dest;
+        arr.push((G.mode === 'toStore' ? '픽업 ' : '배달 ') + Math.round(dist2(t.x, t.z, G.pos.x, G.pos.z)) + 'm');
+      }
+      arr.push('상단 지도는 북쪽 고정 · 미니맵은 ' + (G.mapMode === 'nav' ? '내비(진행 방향 위)' : '북쪽 고정'));
+      info.textContent = arr.join('  ·  ');
     }
-    var k = 0.62; // px per meter
+  }
 
-    // 블록
-    c.fillStyle = '#1b2636';
-    for (var i = 0; i < blocks.length; i++) {
-      var b = blocks[i];
-      var p = tx(b.x - HALF, b.z - HALF), q = tx(b.x + HALF, b.z + HALF);
-      var x0 = Math.min(p[0], q[0]), y0 = Math.min(p[1], q[1]);
-      var w = Math.abs(q[0] - p[0]), h = Math.abs(q[1] - p[1]);
-      c.fillRect(x0 * k, y0 * k, w * k, h * k);
-    }
-    // 도로
-    c.strokeStyle = 'rgba(120,160,200,.30)';
-    c.lineWidth = ROADW * k;
-    for (var j = 0; j < ROADS.length; j++) {
-      var a = tx(ROADS[j], -EDGE), bb = tx(ROADS[j], EDGE);
-      c.beginPath(); c.moveTo(a[0] * k, a[1] * k); c.lineTo(bb[0] * k, bb[1] * k); c.stroke();
-      var a2 = tx(-EDGE, ROADS[j]), b2 = tx(EDGE, ROADS[j]);
-      c.beginPath(); c.moveTo(a2[0] * k, a2[1] * k); c.lineTo(b2[0] * k, b2[1] * k); c.stroke();
-    }
-
-    // 목적지
-    var tgt = null, col = '#ffcf3f';
-    if (G.order && G.mode === 'toStore') { tgt = G.order.store; col = '#ffcf3f'; }
-    else if (G.order && G.mode === 'toCustomer') { tgt = G.order.dest; col = '#54b9ff'; }
-    else if (G.pending && G.mode === 'offer') { tgt = G.pending.store; col = '#ffcf3f'; }
-    if (tgt) {
-      var tp = tx(tgt.x, tgt.z);
-      var pulse = 4.5 + Math.sin(clockT * 4) * 1.2;
-      c.beginPath(); c.arc(tp[0] * k, tp[1] * k, pulse + 2.5, 0, Math.PI * 2);
-      c.fillStyle = col + '33'; c.fill();
-      c.beginPath(); c.arc(tp[0] * k, tp[1] * k, pulse, 0, Math.PI * 2);
-      c.fillStyle = col; c.fill();
-      // 경로선
-      var pp = tx(G.pos.x, G.pos.z);
-      c.setLineDash([4, 4]);
-      c.strokeStyle = col + '99'; c.lineWidth = 1.6;
-      c.beginPath(); c.moveTo(pp[0] * k, pp[1] * k); c.lineTo(tp[0] * k, tp[1] * k); c.stroke();
-      c.setLineDash([]);
-    }
-    c.restore();
-
-    // 플레이어 (항상 위쪽)
-    c.save();
-    c.translate(W / 2, H * 0.62);
-    c.beginPath(); c.moveTo(0, -10); c.lineTo(7.5, 7); c.lineTo(0, 3.5); c.lineTo(-7.5, 7); c.closePath();
-    c.fillStyle = '#ffffff'; c.fill();
-    c.strokeStyle = 'rgba(255,122,26,.9)'; c.lineWidth = 2; c.stroke();
-    // 시야 부채꼴
-    c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 30, -Math.PI / 2 - 0.55, -Math.PI / 2 + 0.55); c.closePath();
-    c.fillStyle = 'rgba(255,200,120,.10)'; c.fill();
-    c.restore();
-
-    // 테두리/노스
-    var g = c.createRadialGradient(W / 2, H * 0.62, 30, W / 2, H * 0.62, W * 0.72);
-    g.addColorStop(0, 'rgba(10,16,25,0)');
-    g.addColorStop(1, 'rgba(10,16,25,.85)');
-    c.fillStyle = g; c.fillRect(0, 0, W, H);
-    c.restore();
+  function openBigMap() {
+    if (!UI.bigMapWrap || G.mapOpen) return;
+    G.mapOpen = true;
+    G.mapPrevPaused = !!G.paused;
+    if (G.running) G.paused = true;
+    G.speed = 0; G.throttle = 0; input.gas = false;
+    UI.bigMapWrap.classList.remove('hidden');
+    updateMapModeUI();
+    renderBigMap();
+    AU.blip(680, 0.07, 'sine', 0.1, 0);
+  }
+  function closeBigMap() {
+    if (!G.mapOpen) return;
+    G.mapOpen = false;
+    UI.bigMapWrap.classList.add('hidden');
+    if (G.running) G.paused = G.mapPrevPaused || false;
+    drawMini();
+  }
+  function updateMapModeUI() {
+    var label = G.mapMode === 'nav' ? '🧭 내비' : 'N 북고정';
+    ['#mapModeBtn', '#mapModeBtn2'].forEach(function (sel) {
+      var el = $(sel);
+      if (!el) return;
+      el.textContent = label;
+      el.classList.toggle('on', G.mapMode === 'nav');
+    });
+  }
+  function toggleMapMode() {
+    G.mapMode = (G.mapMode === 'nav') ? 'north' : 'nav';
+    saveStats();
+    updateMapModeUI();
+    drawMini();
+    if (G.mapOpen) renderBigMap();
+    AU.blip(760, 0.06, 'sine', 0.1, 0);
+    toast(G.mapMode === 'nav' ? '내비 모드' : '북쪽 고정', G.mapMode === 'nav' ? '진행 방향이 항상 위쪽' : 'N이 위로 고정', 1300);
   }
 
   /* ---------- 카메라 ---------- */
@@ -4524,6 +5827,7 @@
     if (G.running) return;
     AU.init();
     AU.setMuted(!G.soundOn);
+    AU.rain(G.tod === 'rain');
     UI.start.classList.add('hidden');
     UI.hud.classList.remove('hidden');
     G.running = true;
@@ -4539,7 +5843,7 @@
     resetInterZones();
     updateCamera(0.016);
     refreshStatsUI();
-    newOrder();
+    makeOffers();
     setTimeout(function () {
       if (G.running && G.mode === 'idle') showCall();
     }, 320);
@@ -4571,6 +5875,9 @@
     drawMini();
     refreshStatsUI();
     bindUI();
+    buildVisor();
+    updateMapModeUI();
+    if (visorEl) visorEl.classList.toggle('on', G.tod === 'rain');
     G.lastHUD = 0; G.lastMini = 0;
 
     window.addEventListener('resize', function () {
@@ -4641,7 +5948,12 @@
     }
     updateCamera(dt);
     updateHandover(dt);
+    updateHornFx(dt);
     updateTurnLamps();
+    if (rainMat && rainGroup && rainGroup.visible) {
+      rainMat.uniforms.uTime.value = clockT;
+      rainMat.uniforms.uCam.value.set(G.pos.x, 0, G.pos.z);
+    }
     if (cloudGroup && cloudGroup.visible) {
       for (var cg = 0; cg < cloudGroup.children.length; cg++) {
         var cl = cloudGroup.children[cg];
@@ -4691,7 +6003,7 @@
         kmh: Math.round(Math.abs(G.speed) * 3.6),
         food: Math.round(G.food),
         tod: G.tod,
-        callVisible: !!$('#callWrap') && !$('#callWrap').classList.contains('hidden'),
+        callVisible: !!$('#boardWrap') && !$('#boardWrap').classList.contains('hidden'),
         settleVisible: !!$('#settleWrap') && !$('#settleWrap').classList.contains('hidden'),
         order: G.order ? {
           store: G.order.store.name, dest: G.order.destLabel, fee: G.order.fee,
@@ -4703,7 +6015,10 @@
         } : null,
         stats: { money: G.stats.money, count: G.stats.count, rating: G.stats.count ? Math.round(G.stats.ratingSum / G.stats.count * 10) / 10 : null,
           earned: G.stats.earned || 0, vehicles: ownedVehicles().slice(0), equipped: G.stats.equipped },
-        vehicle: G.vehicle, gaugeMax: G.gaugeMax
+        vehicle: G.vehicle, gaugeMax: G.gaugeMax,
+        fuel: Math.round(G.fuel), hunger: Math.round(G.hunger), mapMode: G.mapMode,
+        offers: (G.offers || []).length, sel: G.selOffer,
+        bumps: G.bumps || 0, refuels: G.refuels || 0, meals: G.meals || 0
       };
     },
     start: function () { startGame(); },
@@ -4754,6 +6069,13 @@
       if (G.mode === 'toCustomer') { completeDelivery(); return true; }
       return false;
     },
+    pickupNow: function () {
+      if (G.mode !== 'toStore') return false;
+      G.carry = true;
+      if (npcPick) npcPick.visible = false;
+      completePickup();
+      return true;
+    },
     viewTarget: function (dist, speed, side) {
       if (!G.order) return null;
       var t = (G.mode === 'toStore' || (G.mode === 'idle' && G.order)) ? G.order.store : G.order.dest;
@@ -4799,7 +6121,7 @@
         toast: UI.toast.classList.contains('on') ? UI.toast.textContent : null,
         warn: UI.warn.classList.contains('on') ? UI.warn.textContent : null,
         stopHint: UI.stopHint.classList.contains('on') ? UI.stopHint.textContent : null,
-        callTitle: $('#ccStore') ? $('#ccStore').textContent : null,
+        callTitle: (G.offers && G.offers[0]) ? G.offers[0].store.name : null,
         settleTotal: $('#stTotal') ? $('#stTotal').textContent : null,
         settleStars: $('#stStars') ? $('#stStars').textContent + ' ' + $('#stNum').textContent : null
       };
@@ -5044,6 +6366,158 @@
     resetStats: function () {
       G.stats = { money: 0, count: 0, ratingSum: 0, earned: 0, vehicles: ['basic'], equipped: 'basic' };
       saveStats(); applyVehicle('basic'); refreshStatsUI();
+    },
+    /* ---- 대개편 검증 훅 ---- */
+    board: function () {
+      var w = $('#boardWrap');
+      return {
+        visible: !!w && !w.classList.contains('hidden'),
+        cards: document.querySelectorAll('.bc').length,
+        selected: G.selOffer,
+        acceptLabel: $('#bdAccept') ? $('#bdAccept').textContent : null,
+        tip: $('#bdTip') ? $('#bdTip').textContent : null
+      };
+    },
+    offers: function () {
+      var out = [];
+      for (var i = 0; i < (G.offers || []).length; i++) {
+        var o = G.offers[i];
+        out.push({
+          i: i, store: o.store.name, menu: o.store.menu, dest: o.destLabel,
+          storePos: [Math.round(o.store.x), Math.round(o.store.z)], destPos: [Math.round(o.dest.x), Math.round(o.dest.z)],
+          dist: Math.round(o.dist), fee: o.fee, limit: o.limit,
+          tag: o.tag, tagLabel: o.tagLabel, fragile: o.fragile, radar: null
+        });
+      }
+      return out;
+    },
+    selectOffer: function (i) { selectOffer(i); return G.selOffer; },
+    acceptOffer: function (i) { return acceptOffer(i); },
+    openBoard: function () { makeOffers(); showCall(); return G.offers.length; },
+    horn: function () { AU.hornOn(); return hornBlast(); },
+    hornOff: function () { AU.hornOff(); return true; },
+    hornAudio: function () {
+      return {
+        ctx: AU.ctx ? AU.ctx.state : null,
+        playing: !!AU.hornNodes,
+        oscs: AU.hornNodes ? AU.hornNodes.oscs.length : 0,
+        muted: !!AU.muted
+      };
+    },
+    hornState: function () {
+      var sp = 0, ch = 0;
+      for (var i = 0; i < pedData.length; i++) if (pedData[i].startle > 0) sp++;
+      for (var j = 0; j < carData.length; j++) if (carData[j].honkT > 0) ch++;
+      return { startledPeds: sp, brakingCars: ch, lastPeds: G.hornPeds || 0, lastCars: G.hornCars || 0, bubbles: bubblesOn() };
+    },
+    bumps: function () {
+      return { count: bumps.length, passed: G.bumps || 0, mesh: !!bumpMesh, slowUnder: 19 };
+    },
+    bumpNear: function () {
+      var best = null, bd = 1e9;
+      for (var i = 0; i < bumps.length; i++) {
+        var d = dist2(bumps[i].x, bumps[i].z, G.pos.x, G.pos.z);
+        if (d < bd) { bd = d; best = bumps[i]; }
+      }
+      return best ? { x: best.x, z: best.z, axis: best.axis, dist: Math.round(bd * 10) / 10 } : null;
+    },
+    bumpAt: function (i) { var b = bumps[i]; return b ? { x: b.x, z: b.z, axis: b.axis } : null; },
+    bumpHit: function (kmh, i) { return bumpPass(bumps[i || 0], kmh === undefined ? 40 : kmh, true); },
+    fuel: function () {
+      var ns = nearestStation();
+      return {
+        fuel: Math.round(G.fuel * 10) / 10, money: G.stats.money, refuels: G.refuels || 0,
+        stations: gasStations.map(function (s) { return { x: s.x, z: s.z, r: s.r, key: s.key }; }),
+        nearest: ns ? { d: Math.round(ns.d * 10) / 10, x: ns.st.x, z: ns.st.z } : null,
+        btn: { on: !!UI.fuelBtn && UI.fuelBtn.classList.contains('on'), text: UI.fuelTx ? UI.fuelTx.textContent : null },
+        emergencyCap: G.fuel <= 0
+      };
+    },
+    setFuel: function (v) { G.fuel = clamp(v, 0, 100); G.fuelEmptyWarned = false; updateHUD(); return G.fuel; },
+    setHunger: function (v) { G.hunger = clamp(v, 0, 100); G.hungerWarned = false; updateHUD(); return G.hunger; },
+    refuel: function () { return doRefuel(); },
+    goStation: function (i) {
+      var s = gasStations[i || 0];
+      if (!s) return null;
+      G.pos.x = s.x; G.pos.z = s.z + 13; G.speed = 0; G.yaw = 0;
+      updateCamera(0.016); refreshServiceBtns(); updateHUD(); return { x: G.pos.x, z: G.pos.z, d: nearestStation().d };
+    },
+    goMart: function (i) {
+      var m = martStores[i || 0];
+      if (!m) return null;
+      G.pos.x = m.x; G.pos.z = m.z + 2; G.speed = 0; G.yaw = 0;
+      updateCamera(0.016); refreshServiceBtns(); updateHUD(); return { x: G.pos.x, z: G.pos.z, d: nearestMart().d };
+    },
+    marts: function () {
+      var nm = nearestMart();
+      return {
+        list: martStores.map(function (m) { return { x: m.x, z: m.z, r: m.r, key: m.key }; }),
+        nearest: nm ? { d: Math.round(nm.d * 10) / 10, x: nm.st.x, z: nm.st.z } : null,
+        btn: { on: !!UI.mealBtn && UI.mealBtn.classList.contains('on'), text: UI.mealTx ? UI.mealTx.textContent : null },
+        hunger: Math.round(G.hunger), meals: G.meals || 0
+      };
+    },
+    openMeal: function () { return openMeal(); },
+    mealItems: function () {
+      var out = [], els = document.querySelectorAll('#mItems button[data-meal]');
+      for (var i = 0; i < els.length; i++) out.push({ id: els[i].getAttribute('data-meal'), text: els[i].textContent, disabled: els[i].disabled });
+      return out;
+    },
+    eat: function (id) { return eatMeal(id || 'onigiri'); },
+    closeMeal: function () { closeMeal(); return true; },
+    mealOpen: function () { return { open: !!G.eating, visible: !!$('#mealWrap') && !$('#mealWrap').classList.contains('hidden') }; },
+    map: function () {
+      return {
+        mode: G.mapMode,
+        open: !!G.mapOpen,
+        bigVisible: !!UI.bigMapWrap && !UI.bigMapWrap.classList.contains('hidden'),
+        btn: $('#mapModeBtn') ? $('#mapModeBtn').textContent : null,
+        stations: gasStations.length,
+        marts: martStores.length,
+        info: $('#bmInfo') ? $('#bmInfo').textContent : null,
+        miniInk: (function () {
+          var cv = document.getElementById('mini');
+          if (!cv) return 0;
+          var g = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data;
+          var n = 0;
+          for (var i = 0; i < g.length; i += 40) if (g[i + 3] > 8) n++;
+          return n;
+        })()
+      };
+    },
+    setMapMode: function (m) {
+      if (m === 'nav' || m === 'north') { G.mapMode = m; saveStats(); updateMapModeUI(); drawMini(); if (G.mapOpen) renderBigMap(); }
+      return G.mapMode;
+    },
+    toggleMap: function () { toggleMapMode(); return G.mapMode; },
+    openMap: function () { openBigMap(); return true; },
+    closeMap: function () { closeBigMap(); return true; },
+    rainInfo: function () {
+      return {
+        tod: G.tod,
+        rainVisible: !!rainGroup && rainGroup.visible,
+        streaks: rainGroup ? rainGroup.geometry.attributes.position.count / 2 : 0,
+        wetOpacity: wetMesh ? Math.round(wetMesh.material.opacity * 100) / 100 : null,
+        visor: !!visorEl && visorEl.classList.contains('on'),
+        drops: document.querySelectorAll('#visor .drop').length,
+        grip: G.gripNow === undefined ? null : G.gripNow,
+        headlight: headlight ? Math.round(headlight.intensity * 10) / 10 : null
+      };
+    },
+    rainBonus: function () { return G.tod === 'rain' ? clamp(760 + 40 * 0, 0, 1000) : 0; },
+    settleRain: function () {
+      var row = $('#stRainRow');
+      return { shown: !!row && row.style.display !== 'none', text: $('#stRain') ? $('#stRain').textContent : null };
+    },
+    serviceInfo: function () {
+      return {
+        fuelOn: !!UI.fuelBtn && UI.fuelBtn.classList.contains('on'),
+        mealOn: !!UI.mealBtn && UI.mealBtn.classList.contains('on'),
+        fuelText: UI.fuelTx ? UI.fuelTx.textContent : null,
+        mealText: UI.mealTx ? UI.mealTx.textContent : null,
+        fuelVal: UI.fuelVal ? UI.fuelVal.textContent : null,
+        hungerVal: UI.hungerVal ? UI.hungerVal.textContent : null
+      };
     }
   };
 })();
