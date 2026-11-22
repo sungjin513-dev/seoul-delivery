@@ -99,6 +99,18 @@
   #stopHint.on{opacity:1;}
   #stopHint.up{bottom:calc(var(--sab) + 344px);}
 
+  /* ---------- 픽업/전달 버튼 ---------- */
+  #handBtn{position:absolute;left:50%;bottom:calc(var(--sab) + 214px);transform:translateX(-50%) translateY(10px) scale(.94);
+    display:flex;flex-direction:column;align-items:center;gap:1px;min-width:196px;padding:11px 26px 12px;border:0;border-radius:18px;
+    font-family:inherit;color:#3a2200;background:linear-gradient(158deg,#ffdf7a,#ffa528 62%,#f5851a);
+    box-shadow:0 10px 28px rgba(255,152,20,.45),inset 0 0 0 2px rgba(255,255,255,.34),inset 0 -6px 14px rgba(160,70,0,.28);
+    opacity:0;pointer-events:none;z-index:9;transition:opacity .15s,transform .15s;}
+  #handBtn.on{opacity:1;transform:translateX(-50%) translateY(0) scale(1);pointer-events:auto;}
+  #handBtn.press{transform:translateX(-50%) translateY(0) scale(.93);}
+  #handBtn .hbTx{font-size:19px;font-weight:900;letter-spacing:-.6px;line-height:1.15;}
+  #handBtn .hbSub{font-size:10.5px;font-weight:800;letter-spacing:-.2px;opacity:.66;}
+  #handBtn .hbIco{font-size:15px;line-height:1;}
+
   /* ---------- controls ---------- */
   .ctrls{position:absolute;left:0;right:0;bottom:0;height:190px;pointer-events:none;}
   .cluster{position:absolute;bottom:calc(var(--sab) + 16px);display:flex;align-items:flex-end;gap:8px;pointer-events:none;}
@@ -345,6 +357,7 @@
 
     <div id="sigBadge"><i class="lamp"></i><span id="sigTx">전방 신호</span><span class="cd" id="sigCd">0초</span><i class="bar" id="sigBar"></i></div>
     <div id="stopHint">정차하면 픽업!</div>
+    <button id="handBtn"><span class="hbIco">🛍️</span><span class="hbTx">음식 받기</span><span class="hbSub">사장님께 봉투를 받으세요</span></button>
     <div id="toast"></div>
     <div id="warn"></div>
 
@@ -462,6 +475,7 @@
     hitCooldown: 0,
     lastViolation: 0,
     warnUntil: 0,
+    handover: null, carry: false,
     pending: null,
     turn: 0, turnYawAcc: 0, turnAge: 0, mannerAcc: 0, blinkOn: false,
     stats: { money: 0, count: 0, ratingSum: 0, earned: 0, vehicles: ['basic'], equipped: 'basic' },
@@ -543,6 +557,7 @@
     orderDest: $('#orderDest'), orderDist: $('#orderDist'), foodVal: $('#foodVal'), foodFill: $('#foodFill'),
     navBar: $('#navBar'), navArrow: $('#navArrow'), navName: $('#navName'), navDist: $('#navDist'), mapDist: $('#mapDist'),
     stopHint: $('#stopHint'), toast: $('#toast'), warn: $('#warn'),
+    handBtn: $('#handBtn'), handTx: $('#handBtn .hbTx'), handSub: $('#handBtn .hbSub'),
     sigBadge: $('#sigBadge'), sigTx: $('#sigTx'), sigCd: $('#sigCd'), sigBar: $('#sigBar'),
     btnTurnL: $('#btnTurnL'), btnTurnR: $('#btnTurnR'),
     mini: $('#mini'), muteBtn: $('#muteBtn'),
@@ -632,6 +647,19 @@
       this.blip(880, 0.1, 'triangle', 0.2, 0.09);
       this.blip(1174, 0.16, 'triangle', 0.18, 0.18);
     },
+    // 종이봉투 바스락 + "감사합니다" 느낌의 짧은 벨
+    rustle: function () {
+      if (!this.ctx || this.muted) return;
+      var ctx = this.ctx, t0 = ctx.currentTime, len = Math.floor(ctx.sampleRate * 0.18);
+      var buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.2) * 0.7;
+      var src = ctx.createBufferSource(); src.buffer = buf;
+      var bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2400; bp.Q.value = 0.8;
+      var g = ctx.createGain(); g.gain.value = 0.16;
+      src.connect(bp); bp.connect(g); g.connect(this.master); src.start(t0);
+      this.blip(1245, 0.09, 'triangle', 0.10, 0.03);
+      this.blip(1660, 0.11, 'triangle', 0.09, 0.10);
+    },
     settle: function () {
       [523, 659, 784, 1046].forEach(function (f, i) { AU.blip(f, 0.18, 'triangle', 0.17, i * 0.085); });
     },
@@ -693,9 +721,10 @@
   var signMats = [];
   var streetGlow, streetLampMats = [];
   var carData = [], carBody, carRoof, carHead, carTail;
-  var pedData = [], pedBody, pedHead;
+  var pedData = [];
+  var pedMesh = {}, PED_N = 96, PED_OFF = 21.2, blockMap = null;
   var signalHeads = [], lampMesh, lampData = [], haloMesh = null, haloData = [], gantryHeads = [];
-  var signalPhaseNow = -1;
+  var signalPhaseNow = -1, sigPhaseAt = 0;
   var beaconPick, beaconDrop;
   var towerDeckMat, towerTopMat, towerBeaconMat;
   var speedoCtx, phoneCtx;
@@ -1098,6 +1127,7 @@
     makeCars();
     makePeds();
     makeBeacons();
+    makeHandoverKit();
     buildCockpit(G.spec || VEH_BY_ID[G.stats.equipped] || VEHICLES[0]);
   }
 
@@ -2101,9 +2131,21 @@
       var roadIdx = Math.floor(Math.random() * ROADS.length);
       var axis = Math.random() < 0.5 ? 'x' : 'z';
       var dir = Math.random() < 0.5 ? 1 : -1;
+      // 같은 차선에 너무 가까이 스폰되지 않게 재시도
+      var s = rand(-EDGE, EDGE);
+      for (var tryN = 0; tryN < 14; tryN++) {
+        var clash = false;
+        for (var q = 0; q < carData.length; q++) {
+          var cd0 = carData[q];
+          if (cd0.axis === axis && cd0.dir === dir && Math.abs(cd0.c - ROADS[roadIdx]) < 1.5 && Math.abs(cd0.s - s) < 11) { clash = true; break; }
+        }
+        if (!clash) break;
+        s = rand(-EDGE, EDGE);
+      }
+      var cruise = rand(6.5, 11.5);
       carData.push({
         axis: axis, c: ROADS[roadIdx], dir: dir,
-        s: rand(-EDGE, EDGE), speed: rand(6.5, 11.5),
+        s: s, speed: cruise, v: cruise,
         color: carCols[i % carCols.length], off: 5
       });
       carBody.setColorAt(i, new THREE.Color(carCols[i % carCols.length]));
@@ -2113,26 +2155,111 @@
     carHead.frustumCulled = false; carTail.frustumCulled = false;
   }
 
-  /* --- 보행자 --- */
+  /* --- 보행자: 인도 걷기 · 횡단보도 신호 대기 --- */
+  function pedInitBlocks() {
+    if (blockMap) return;
+    blockMap = {};
+    for (var i = 0; i < blocks.length; i++) blockMap[blocks[i].i + ',' + blocks[i].j] = blocks[i];
+  }
+  function pedBlock(bi, bj) { pedInitBlocks(); return blockMap[bi + ',' + bj] || null; }
+  function pedCorner(bi, bj, k) {
+    var b = pedBlock(bi, bj);
+    if (!b) return null;
+    return {
+      x: b.x + ((k === 0 || k === 3) ? PED_OFF : -PED_OFF),
+      z: b.z + ((k === 0 || k === 1) ? PED_OFF : -PED_OFF)
+    };
+  }
+  // 코너별 건널 수 있는 길 (di/dj = 건너편 블록, k = 도착 코너, axis = 건너는 도로의 차량 축)
+  var PED_CROSS = {
+    0: [{ di: 1, dj: 0, k: 1, axis: 'ns' }, { di: 0, dj: 1, k: 3, axis: 'ew' }],
+    1: [{ di: -1, dj: 0, k: 0, axis: 'ns' }, { di: 0, dj: 1, k: 2, axis: 'ew' }],
+    2: [{ di: -1, dj: 0, k: 3, axis: 'ns' }, { di: 0, dj: -1, k: 1, axis: 'ew' }],
+    3: [{ di: 1, dj: 0, k: 2, axis: 'ns' }, { di: 0, dj: -1, k: 0, axis: 'ew' }]
+  };
+  // 보행 신호: 건너려는 도로의 차량이 적신호이고, 남은 시간이 충분할 때만
+  function pedSignalOK(axis) {
+    var st = signalStates();
+    var car = axis === 'ns' ? st.ns : st.ew;
+    if (car !== 0) return false;
+    return signalLeft(axis === 'ns' ? 'ew' : 'ns').left >= 7.0;
+  }
+  function pedDecide(p) {
+    var opts = PED_CROSS[p.k] || [], cand = [];
+    for (var i = 0; i < opts.length; i++) {
+      if (pedBlock(p.bi + opts[i].di, p.bj + opts[i].dj)) cand.push(opts[i]);
+    }
+    if (!cand.length || Math.random() >= p.crossBias) return;
+    var c = cand[Math.floor(Math.random() * cand.length)];
+    var a = pedCorner(p.bi, p.bj, p.k), b = pedCorner(p.bi + c.di, p.bj + c.dj, c.k);
+    var len = Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.z - a.z, 2)) || 1;
+    p.cross = { di: c.di, dj: c.dj, k: c.k, axis: c.axis, sx: a.x, sz: a.z, ex: b.x, ez: b.z, len: len };
+    if (pedSignalOK(c.axis)) { p.kind = 'cross'; p.cu = 0; }
+    else { p.kind = 'wait'; p.waitT = 0; }
+  }
+
   function makePeds() {
-    var N = 38;
-    var bodyGeo = new THREE.CylinderGeometry(0.17, 0.21, 0.82, 6);
-    pedBody = new THREE.InstancedMesh(bodyGeo, new THREE.MeshLambertMaterial({ color: 0xffffff }), N);
-    pedHead = new THREE.InstancedMesh(new THREE.SphereGeometry(0.15, 8, 6),
-      new THREE.MeshLambertMaterial({ color: 0xe8c4a4 }), N);
-    var cols = [0x2f3b52, 0x5b3a3a, 0x2c4a3a, 0x6b5f4a, 0x3a3a44, 0x8a4b58, 0xc2c6cc];
+    pedInitBlocks();
+    var N = PED_N;
+    var white = 0xffffff;
+    pedMesh.torso = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.205, 0.238, 0.62, 9),
+      new THREE.MeshLambertMaterial({ color: white }), N);
+    pedMesh.head = new THREE.InstancedMesh(new THREE.SphereGeometry(0.142, 10, 8),
+      new THREE.MeshLambertMaterial({ color: white }), N);
+    pedMesh.hair = new THREE.InstancedMesh(new THREE.SphereGeometry(0.147, 10, 8),
+      new THREE.MeshLambertMaterial({ color: white }), N);
+    var legGeo = new THREE.CylinderGeometry(0.079, 0.062, 0.82, 6); legGeo.translate(0, -0.41, 0);
+    pedMesh.leg = new THREE.InstancedMesh(legGeo, new THREE.MeshLambertMaterial({ color: white }), N * 2);
+    var armGeo = new THREE.CylinderGeometry(0.059, 0.05, 0.60, 6); armGeo.translate(0, -0.30, 0);
+    pedMesh.arm = new THREE.InstancedMesh(armGeo, new THREE.MeshLambertMaterial({ color: white }), N * 2);
+
+    var shirts = [0xe23b45, 0x2f6fd0, 0xf2c531, 0x1f9e8a, 0xf4f6f8, 0x27303d, 0xe46aa8,
+      0x4a8a3a, 0x7a4fc4, 0xd9cbb0, 0xff7a1a, 0x5fc7e8, 0x8e2f4f, 0x3d5a7a];
+    var pantsC = [0x22303f, 0x2b3a4a, 0x3a3f48, 0x2d2a33, 0x4a4238, 0x1c2430, 0x5a6472, 0x384a63];
+    var skins = [0xf0c9a8, 0xe8b894, 0xd9a077, 0xc08a63, 0xa87050, 0xf6d3b6];
+    var hairs = [0x1a1613, 0x2c211b, 0x3d2a1c, 0x121212, 0x5a4433, 0x8f949a];
+    var cTmp = new THREE.Color();
+
     for (var i = 0; i < N; i++) {
       var blk = blocks[Math.floor(Math.random() * blocks.length)];
+      var k = Math.floor(Math.random() * 4);
+      var shirt = shirts[Math.floor(Math.random() * shirts.length)];
+      var pants = pantsC[Math.floor(Math.random() * pantsC.length)];
       pedData.push({
-        blk: blk, t: Math.random(), side: Math.floor(Math.random() * 4),
-        speed: rand(0.5, 1.1), dir: Math.random() < 0.5 ? 1 : -1,
-        base: rand(-18, 18)
+        bi: blk.i, bj: blk.j, k: k, u: Math.random(),
+        kind: 'walk', speed: rand(1.15, 1.85), scale: rand(0.93, 1.07),
+        crossBias: Math.random() < 0.45 ? 0.78 : 0.20,
+        cross: null, cu: 0, waitT: 0,
+        phase: rand(0, 6.28), shirt: shirt, pants: pants,
+        skin: skins[Math.floor(Math.random() * skins.length)],
+        hair: hairs[Math.floor(Math.random() * hairs.length)]
       });
-      pedBody.setColorAt(i, new THREE.Color(cols[i % cols.length]));
+      pedMesh.torso.setColorAt(i, cTmp.setHex(shirt));
+      pedMesh.head.setColorAt(i, cTmp.setHex(pedData[i].skin));
+      pedMesh.hair.setColorAt(i, cTmp.setHex(pedData[i].hair));
+      pedMesh.leg.setColorAt(i * 2, cTmp.setHex(pants));
+      pedMesh.leg.setColorAt(i * 2 + 1, cTmp.setHex(pants));
+      pedMesh.arm.setColorAt(i * 2, cTmp.setHex(shirt));
+      pedMesh.arm.setColorAt(i * 2 + 1, cTmp.setHex(shirt));
     }
-    pedBody.instanceColor.needsUpdate = true;
-    scene.add(pedBody); scene.add(pedHead);
-    pedBody.frustumCulled = false; pedHead.frustumCulled = false;
+    for (var nm in pedMesh) {
+      var m = pedMesh[nm];
+      if (m.instanceColor) m.instanceColor.needsUpdate = true;
+      m.frustumCulled = false;
+      scene.add(m);
+    }
+    // 시작 시 몇 명은 횡단보도 앞에서 대기시켜 도시를 살아있게
+    for (var w = 0; w < 10; w++) {
+      var pw = pedData[(w * 5 + 3) % pedData.length];
+      if (!pw || pw.kind !== 'walk') continue;
+      var o = (PED_CROSS[pw.k] || [])[0];
+      if (!o || !pedBlock(pw.bi + o.di, pw.bj + o.dj)) continue;
+      var a = pedCorner(pw.bi, pw.bj, pw.k), b = pedCorner(pw.bi + o.di, pw.bj + o.dj, o.k);
+      pw.u = 0;
+      pw.cross = { di: o.di, dj: o.dj, k: o.k, axis: o.axis, sx: a.x, sz: a.z, ex: b.x, ez: b.z,
+        len: Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.z - a.z, 2)) || 1 };
+      pw.kind = 'wait';
+    }
   }
 
   /* --- 비컨(픽업/도착) --- */
@@ -2180,6 +2307,176 @@
     beaconPick.label.position.y = 8.5;
     beaconDrop.label.position.y = 8.5;
   }
+
+  /* --- 픽업/배달 NPC · 직접 건네주기 --- */
+  var npcPick = null, npcDrop = null, handRig = null, flyBag = null, rigBag = null;
+  var vTmpA = null, vTmpB = null;
+
+  // 종이봉투 (바닥 기준)
+  function makeBagMesh(scale) {
+    var g = new THREE.Group();
+    var paper = new THREE.MeshLambertMaterial({ color: 0xd9a463 });
+    var paper2 = new THREE.MeshLambertMaterial({ color: 0xbb8746 });
+    var body = new THREE.Mesh(new THREE.BoxGeometry(0.33, 0.40, 0.23), paper);
+    body.position.y = 0.20; g.add(body);
+    var top = new THREE.Mesh(new THREE.BoxGeometry(0.345, 0.05, 0.245), paper2);
+    top.position.y = 0.42; g.add(top);
+    var label = new THREE.Mesh(new THREE.PlaneGeometry(0.19, 0.11),
+      new THREE.MeshBasicMaterial({ color: 0xff8a1e, toneMapped: false }));
+    label.position.set(0, 0.25, -0.118); label.rotation.y = Math.PI; g.add(label);
+    var hd = new THREE.Mesh(new THREE.TorusGeometry(0.085, 0.011, 5, 10, Math.PI), paper2);
+    hd.position.y = 0.43; g.add(hd);
+    g.scale.setScalar(scale || 1);
+    return g;
+  }
+
+  // 사람 (모델 정면 = -Z)
+  function makeNpc(cfg) {
+    var g = new THREE.Group();
+    var skinM = new THREE.MeshLambertMaterial({ color: cfg.skin });
+    var shirtM = new THREE.MeshLambertMaterial({ color: cfg.shirt });
+    var pantsM = new THREE.MeshLambertMaterial({ color: cfg.pants });
+    var hairM = new THREE.MeshLambertMaterial({ color: cfg.hair });
+    var shoeM = new THREE.MeshLambertMaterial({ color: 0x24272d });
+
+    var torso = new THREE.Mesh(new THREE.CylinderGeometry(0.205, 0.242, 0.64, 12), shirtM);
+    torso.position.y = 1.12; g.add(torso);
+    var hips = new THREE.Mesh(new THREE.CylinderGeometry(0.228, 0.206, 0.18, 12), pantsM);
+    hips.position.y = 0.79; g.add(hips);
+    [-1, 1].forEach(function (sd) {
+      var leg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.073, 0.80, 9), pantsM);
+      leg.position.set(sd * 0.118, 0.40, 0); g.add(leg);
+      var shoe = new THREE.Mesh(new THREE.BoxGeometry(0.145, 0.10, 0.28), shoeM);
+      shoe.position.set(sd * 0.118, 0.06, -0.035); g.add(shoe);
+      var pivot = new THREE.Group();
+      pivot.position.set(sd * 0.268, 1.37, 0);
+      var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.067, 0.057, 0.58, 9), shirtM);
+      arm.position.y = -0.29; pivot.add(arm);
+      var hand = new THREE.Mesh(new THREE.SphereGeometry(0.067, 8, 6), skinM);
+      hand.position.y = -0.60; pivot.add(hand);
+      g.add(pivot);
+      if (sd < 0) g.userData.armL = pivot; else g.userData.armR = pivot;
+    });
+    var head = new THREE.Mesh(new THREE.SphereGeometry(0.158, 14, 10), skinM);
+    head.position.y = 1.62; g.add(head);
+    var hair = new THREE.Mesh(new THREE.SphereGeometry(0.166, 14, 10), hairM);
+    hair.scale.set(1, 0.87, 1.03); hair.position.set(0, 1.666, 0.016); g.add(hair);
+    [-1, 1].forEach(function (sd) {
+      var eye = new THREE.Mesh(new THREE.SphereGeometry(0.019, 6, 5),
+        new THREE.MeshBasicMaterial({ color: 0x1b1b1b }));
+      eye.position.set(sd * 0.055, 1.637, -0.146); g.add(eye);
+    });
+    if (cfg.apron) {
+      var apronM = new THREE.MeshLambertMaterial({ color: cfg.apron });
+      var ap = new THREE.Mesh(new THREE.BoxGeometry(0.40, 0.60, 0.055), apronM);
+      ap.position.set(0, 1.00, -0.205); g.add(ap);
+      var apTop = new THREE.Mesh(new THREE.BoxGeometry(0.29, 0.20, 0.05), apronM);
+      apTop.position.set(0, 1.33, -0.208); g.add(apTop);
+    }
+    if (cfg.cap) {
+      var capM = new THREE.MeshLambertMaterial({ color: cfg.cap });
+      var cap = new THREE.Mesh(new THREE.CylinderGeometry(0.169, 0.169, 0.10, 14), capM);
+      cap.position.y = 1.755; g.add(cap);
+      var brim = new THREE.Mesh(new THREE.BoxGeometry(0.27, 0.03, 0.17), capM);
+      brim.position.set(0, 1.712, -0.145); g.add(brim);
+    }
+    if (cfg.scarf) {
+      var scM = new THREE.MeshLambertMaterial({ color: cfg.scarf });
+      var sc = new THREE.Mesh(new THREE.CylinderGeometry(0.175, 0.19, 0.13, 12), scM);
+      sc.position.y = 1.42; g.add(sc);
+      var sc2 = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.34, 0.05), scM);
+      sc2.position.set(-0.10, 1.20, -0.20); g.add(sc2);
+    }
+    var anchor = new THREE.Object3D();
+    anchor.position.set(0, -0.60, 0);
+    g.userData.armR.add(anchor);
+    g.userData.handPt = anchor;
+    g.userData.armL.rotation.z = 0.10;
+    g.userData.armR.rotation.z = -0.10;
+    return g;
+  }
+
+  function makeHandoverKit() {
+    vTmpA = new THREE.Vector3(); vTmpB = new THREE.Vector3();
+
+    // 가게 사장님 (앞치마 + 모자)
+    npcPick = makeNpc({ shirt: 0xf3f5f8, pants: 0x2b3442, skin: 0xefc39c, hair: 0x1d1712,
+      apron: 0x2f9d6a, cap: 0x2f9d6a });
+    npcPick.name = 'npcStore';
+    npcPick.userData.bag = makeBagMesh(1);
+    npcPick.userData.bag.position.set(0, 0.56, -0.40);
+    npcPick.add(npcPick.userData.bag);
+    npcPick.userData.armL.rotation.x = -0.85;
+    npcPick.userData.armR.rotation.x = -0.85;
+    npcPick.visible = false;
+    scene.add(npcPick);
+
+    // 배달 고객 (목도리)
+    npcDrop = makeNpc({ shirt: 0x3f6fd8, pants: 0x22303f, skin: 0xe7bb95, hair: 0x2d211a,
+      scarf: 0xd8443a });
+    npcDrop.name = 'npcCustomer';
+    npcDrop.userData.bag = makeBagMesh(1);
+    npcDrop.userData.bag.position.set(0, 0.56, -0.40);
+    npcDrop.userData.bag.visible = false;
+    npcDrop.add(npcDrop.userData.bag);
+    npcDrop.visible = false;
+    scene.add(npcDrop);
+
+    // 1인칭 손 + 봉투 (팔 길이 거리에서 뻗음)
+    handRig = new THREE.Group();
+    var sleeve = new THREE.MeshLambertMaterial({ color: 0x232d3b });
+    var glove = new THREE.MeshPhongMaterial({ color: 0x3a332b, shininess: 12, specular: 0x241f19 });
+    var gloveHi = new THREE.MeshPhongMaterial({ color: 0x51473a, shininess: 10, specular: 0x221d18 });
+    limbMesh(handRig, [0.40, -0.86, 0.20], [0.150, -0.38, -0.28], 0.074, 0.060, sleeve, 10);
+    var cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.072, 0.075, 10), sleeve);
+    cuff.position.set(0.185, -0.425, -0.005); cuff.rotation.set(1.15, 0.45, 0); handRig.add(cuff);
+    // 손등 + 손가락 + 엄지
+    var handG = new THREE.Group();
+    handG.position.set(0.140, -0.332, -0.345);
+    var back = new THREE.Mesh(new THREE.SphereGeometry(0.076, 12, 10), glove);
+    back.scale.set(0.90, 0.52, 1.30); handG.add(back);
+    for (var fg2 = 0; fg2 < 4; fg2++) {
+      var fgr = new THREE.Mesh(new THREE.CylinderGeometry(0.0185, 0.016, 0.10, 7), glove);
+      fgr.rotation.x = Math.PI / 2;
+      fgr.position.set(-0.042 + fg2 * 0.030, 0.004, -0.108);
+      handG.add(fgr);
+    }
+    var thumb = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.019, 0.085, 7), gloveHi);
+    thumb.rotation.set(Math.PI / 2, 0, 0.55);
+    thumb.position.set(-0.072, -0.005, -0.045);
+    handG.add(thumb);
+    var knuck = new THREE.Mesh(new THREE.SphereGeometry(0.030, 8, 6), gloveHi);
+    knuck.scale.set(1.6, 0.8, 1); knuck.position.set(0, 0.032, -0.02);
+    handG.add(knuck);
+    handRig.add(handG);
+    rigBag = makeBagMesh(0.72);
+    rigBag.position.set(0.28, -0.60, -0.56);
+    handRig.add(rigBag);
+    rigBag.visible = false;
+    var hanchor = new THREE.Object3D();
+    hanchor.position.set(0.135, -0.335, -0.39);
+    handRig.add(hanchor);
+    handRig.userData.handPt = hanchor;
+    handRig.visible = false;
+    camera.add(handRig);
+
+    flyBag = makeBagMesh(0.62);
+    flyBag.visible = false;
+    scene.add(flyBag);
+  }
+
+  // 주문 위치에 NPC 배치 (가게 앞 보도 · 고객 집 앞)
+  function placeNpcs() {
+    var o = G.order;
+    if (!o || !npcPick) return;
+    npcPick.position.set(o.store.x + 1.5, 0, o.store.z - 4.8);
+    npcPick.rotation.y = Math.atan2(-(o.store.x - npcPick.position.x), -(o.store.z - npcPick.position.z));
+    npcDrop.position.set(o.dest.x + 1.5, 0, o.dest.z - 4.8);
+    npcDrop.rotation.y = Math.atan2(-(o.dest.x - npcDrop.position.x), -(o.dest.z - npcDrop.position.z));
+    npcPick.userData.bag.visible = true;
+    npcDrop.userData.bag.visible = false;
+  }
+
 
   function makeLabelSprite(text, color) {
     var c = canvasOf(256, 96), x = c.getContext('2d');
@@ -2700,6 +2997,9 @@
     G.pending = null;
     o.timeLeft = o.limit;
     o.startedAt = G.time;
+    placeNpcs();
+    npcPick.visible = true;
+    npcDrop.visible = false;
     beaconPick.grp.visible = true;
     beaconDrop.grp.visible = false;
     beaconPick.grp.position.set(o.store.x, 0, o.store.z);
@@ -2724,6 +3024,7 @@
     G.mode = 'toCustomer';
     beaconPick.grp.visible = false;
     beaconDrop.grp.visible = true;
+    if (npcDrop) npcDrop.visible = true;
     setOrderHUD('고객에게 배달', o.destLabel, '픽업 완료 · 음식 온도 유지');
     UI.stopHint.classList.remove('on');
     AU.pickup();
@@ -2909,6 +3210,20 @@
     bindHold(UI.btnRight, function () { input.right = true; }, function () { input.right = false; });
     UI.btnHorn.addEventListener('pointerdown', function (e) { e.preventDefault(); AU.horn(); });
     UI.btnHorn.addEventListener('click', function () { AU.horn(); });
+
+    if (UI.handBtn) {
+      UI.handBtn.addEventListener('pointerdown', function (e) {
+        e.preventDefault();
+        UI.handBtn.classList.add('press');
+      });
+      UI.handBtn.addEventListener('pointerup', function () { UI.handBtn.classList.remove('press'); });
+      UI.handBtn.addEventListener('pointercancel', function () { UI.handBtn.classList.remove('press'); });
+      UI.handBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        UI.handBtn.classList.remove('press');
+        startHandover();
+      });
+    }
 
     if (UI.btnTurnL) UI.btnTurnL.addEventListener('click', function (e) { e.preventDefault(); setTurn(-1); });
     if (UI.btnTurnR) UI.btnTurnR.addEventListener('click', function (e) { e.preventDefault(); setTurn(1); });
@@ -3261,7 +3576,7 @@
     G.steer = lerp(G.steer, targetSteer, 1 - Math.exp(-dt * 7));
 
     var moving = G.mode === 'toStore' || G.mode === 'toCustomer';
-    var canDrive = G.running && !G.paused && G.mode !== 'offer' && G.mode !== 'settle';
+    var canDrive = G.running && !G.paused && G.mode !== 'offer' && G.mode !== 'settle' && !G.handover;
     var oldSpeed = G.speed;
     var yawDelta = 0;
 
@@ -3381,15 +3696,12 @@
       var tgt = G.mode === 'toStore' ? o.store : o.dest;
       var d = dist2(tgt.x, tgt.z, G.pos.x, G.pos.z);
       var lmt = G.mode === 'toStore' ? 16 : 18;
-      if (d < lmt && Math.abs(G.speed) > 1.2) {
-        UI.stopHint.textContent = G.mode === 'toStore' ? '정차하면 픽업!' : '정차하면 배달 완료!';
+      var cand = refreshHandBtn();
+      if (!cand && d < lmt && Math.abs(G.speed) > 1.2) {
+        UI.stopHint.textContent = G.mode === 'toStore' ? '가게 앞에 정차하면 픽업!' : '고객 앞에 정차하면 전달!';
         UI.stopHint.classList.add('on');
       } else {
         UI.stopHint.classList.remove('on');
-      }
-      if (d < 6.0 && Math.abs(G.speed) < 1.5) {
-        if (G.mode === 'toStore') completePickup();
-        else completeDelivery();
       }
       checkSignalViolation();
     }
@@ -3582,6 +3894,7 @@
     var key = st.ns + '' + st.ew;
     if (key === signalPhaseNow) return;
     signalPhaseNow = key;
+    sigPhaseAt = clockT;
     if (!lampMesh) return;
     var col = new THREE.Color(), hc = new THREE.Color();
     for (var i = 0; i < lampData.length; i++) {
@@ -3608,13 +3921,80 @@
     carP = new THREE.Vector3(); carS = new THREE.Vector3();
   }
 
+  /* --- AI 차량: 신호 준수 · 차간 거리 --- */
+  var CAR_LEN = 4.25;
+  var CAR_STOP_BIAS = 19.6;      // 교차로 중심에서 정지선(16.7) + 차체 앞부분 + 여유
+
+  function carAxisLight(c) {
+    var st = signalStates();
+    return c.axis === 'x' ? st.ew : st.ns;   // x축 주행 = 동서(ew), z축 주행 = 남북(ns)
+  }
+
+  // 가장 가까운 전방 교차로의 신호 정지 목표 {v, stopS, light, dist}
+  function carSignalTarget(c) {
+    var light = carAxisLight(c);
+    if (light === 2) return { v: 999, stopS: null, light: light, dist: null };
+    var bestS = null, bestD = 1e9;
+    for (var j = 0; j < ROADS.length; j++) {
+      var stopS = ROADS[j] - c.dir * CAR_STOP_BIAS;
+      var d = (stopS - c.s) * c.dir;
+      if (d > 42) continue;          // 아직 멀다
+      if (d < -0.4) continue;        // 이미 정지선을 넘었다 → 교차로 통과 중, 멈추지 않는다
+      if (d < bestD) { bestD = d; bestS = stopS; }
+    }
+    if (bestS === null) return { v: 999, stopS: null, light: light, dist: null };
+    // 제동거리 안에 들어왔으면 멈추기보다 그대로 진행 (황색 딜레마 존 / 막 바뀐 적색)
+    var need = (c.v * c.v) / (2 * 8.0) + 0.4;
+    if (bestD < need) {
+      if (light === 1) return { v: 999, stopS: null, light: light, dist: bestD };
+    }
+    var v = Math.sqrt(Math.max(0, 2 * 7.0 * Math.max(0, bestD - 0.12)));
+    return { v: v, stopS: bestS, light: light, dist: bestD };
+  }
+
+  // 같은 차선(같은 축·방향·차로)에서 바로 앞 차까지의 중심 간 거리
+  function carLeadGap(c) {
+    var best = 1e9, bestS = null;
+    for (var i = 0; i < carData.length; i++) {
+      var o = carData[i];
+      if (o === c || o.axis !== c.axis || o.dir !== c.dir) continue;
+      if (Math.abs(o.c - c.c) > 1.5) continue;
+      var gap = (o.s - c.s) * c.dir;
+      if (gap <= 0.05 || gap > 34) continue;
+      if (gap < best) { best = gap; bestS = o.s; }
+    }
+    c.leadS = bestS;
+    return best;
+  }
+
   function updateCars(dt) {
     if (!carM) initCarTemp();
     for (var i = 0; i < carData.length; i++) {
       var c = carData[i];
-      c.s += c.dir * c.speed * dt;
-      if (c.s > EDGE + 8) c.s = -EDGE - 8;
-      if (c.s < -EDGE - 8) c.s = EDGE + 8;
+      // --- 목표 속도: 신호 + 앞차 ---
+      var sig = carSignalTarget(c);
+      var wantV = c.speed;
+      if (sig.v < wantV) wantV = sig.v;
+      var lead = carLeadGap(c);
+      if (lead < 30) {
+        var lv = Math.sqrt(Math.max(0, 2 * 7.0 * Math.max(0, lead - CAR_LEN - 2.7)));
+        if (lv < wantV) wantV = lv;
+      }      var acc = wantV > c.v ? 3.2 : 8.0;
+      if (c.v < wantV) c.v = Math.min(wantV, c.v + acc * dt);
+      else c.v = Math.max(wantV, c.v - acc * dt);
+      if (c.v < 0.02) c.v = 0;
+
+      var ns = c.s + c.dir * c.v * dt;
+      // 적신호면 정지선을 절대 넘지 않도록 클램프
+      if (sig.stopS !== null && (ns - sig.stopS) * c.dir > 0) { ns = sig.stopS; c.v = 0; }
+      // 앞차 꼬리를 절대 파고들지 않도록 클램프
+      if (c.leadS !== undefined && c.leadS !== null) {
+        var capS = c.leadS - c.dir * (CAR_LEN + 1.9);
+        if ((ns - capS) * c.dir > 0) { ns = capS; if (c.v > 0) c.v *= 0.25; }
+      }
+      c.s = ns;
+      if (c.s > EDGE + 8) { c.s = -EDGE - 8; c.v = c.speed; }
+      if (c.s < -EDGE - 8) { c.s = EDGE + 8; c.v = c.speed; }
       var wx, wz, yaw;
       if (c.axis === 'x') {
         wx = c.s; wz = c.c + (c.dir > 0 ? 5 : -5);
@@ -3649,38 +4029,93 @@
   }
 
   var pedM, pedQ, pedP, pedS;
+  var pedM, pedM2, pedM3, pedQ, pedQ2, pedP, pedS, pedE, pedBase;
   function initPedTemp() {
-    pedM = new THREE.Matrix4(); pedQ = new THREE.Quaternion(); pedP = new THREE.Vector3(); pedS = new THREE.Vector3();
+    pedM = new THREE.Matrix4(); pedM2 = new THREE.Matrix4(); pedM3 = new THREE.Matrix4(); pedBase = new THREE.Matrix4();
+    pedQ = new THREE.Quaternion(); pedQ2 = new THREE.Quaternion();
+    pedP = new THREE.Vector3(); pedS = new THREE.Vector3(); pedE = new THREE.Euler();
   }
 
-  function pedPos(pd) {
-    // 블록 외곽 인도를 따라 사각형으로 이동
-    var off = HALF - 1.55 + (pd.side % 2 === 0 ? 0 : 0.6);
-    var per = 4 * (off * 2);
-    var u = (pd.t * per + pd.base + per) % per;
-    var side = Math.floor(u / (off * 2)) % 4;
-    var v = u % (off * 2);
-    var bx = pd.blk.x, bz = pd.blk.z;
-    if (side === 0) return [bx - off + v, bz + off];
-    if (side === 1) return [bx + off, bz + off - v];
-    if (side === 2) return [bx + off - v, bz - off];
-    return [bx - off, bz - off + v];
+  // 보행자 파트 하나를 기준 행렬(pedBase) 기준 로컬 변환으로 배치
+  function pedPut(mesh, idx, px, py, pz, rx, rz, sx, sy, sz) {
+    pedP.set(px, py, pz);
+    pedQ2.setFromEuler(pedE.set(rx || 0, 0, rz || 0));
+    pedS.set(sx || 1, sy || 1, sz || 1);
+    pedM2.compose(pedP, pedQ2, pedS);
+    pedM3.multiplyMatrices(pedBase, pedM2);
+    mesh.setMatrixAt(idx, pedM3);
   }
 
   function updatePeds(dt) {
     if (!pedM) initPedTemp();
     for (var i = 0; i < pedData.length; i++) {
       var p = pedData[i];
-      p.t += (p.dir * p.speed * dt) / 160;
-      var pp = pedPos(p);
-      var walk = Math.abs(Math.sin(clockT * 6 + i)) * 0.06;
-      pedP.set(pp[0], CURB_H + 0.41 + walk, pp[1]); pedQ.identity(); pedS.set(1, 1, 1);
-      pedM.compose(pedP, pedQ, pedS); pedBody.setMatrixAt(i, pedM);
-      pedP.set(pp[0], CURB_H + 1.0 + walk, pp[1]);
-      pedM.compose(pedP, pedQ, pedS); pedHead.setMatrixAt(i, pedM);
+      // ---------- 상태 진행 ----------
+      if (p.kind === 'walk') {
+        p.u += p.speed * dt / (PED_OFF * 2);
+        if (p.u >= 1) {
+          p.u -= 1;
+          p.k = (p.k + 1) % 4;
+          pedDecide(p);
+        }
+      } else if (p.kind === 'wait') {
+        p.waitT += dt;
+        if (pedSignalOK(p.cross.axis)) { p.kind = 'cross'; p.cu = 0; }
+      } else {
+        p.cu += p.speed * 1.75 * dt / p.cross.len;
+        if (p.cu >= 1) {
+          p.bi += p.cross.di; p.bj += p.cross.dj; p.k = p.cross.k; p.u = 0;
+          p.kind = 'walk'; p.cross = null;
+        }
+      }
+
+      // ---------- 위치 / 방향 ----------
+      var x, z, y, yaw;
+      if (p.kind === 'cross') {
+        var cr = p.cross;
+        x = cr.sx + (cr.ex - cr.sx) * p.cu;
+        z = cr.sz + (cr.ez - cr.sz) * p.cu;
+        yaw = Math.atan2(-(cr.ex - cr.sx), -(cr.ez - cr.sz));
+        var dd = p.cu * cr.len;
+        var edge = Math.min(1, Math.min(dd, cr.len - dd) / 1.7);   // 연석 단차 완만하게
+        y = 0.02 + (CURB_H - 0.02) * edge;
+      } else {
+        var a = pedCorner(p.bi, p.bj, p.k), b = pedCorner(p.bi, p.bj, (p.k + 1) % 4);
+        if (!a || !b) continue;
+        x = a.x + (b.x - a.x) * p.u;
+        z = a.z + (b.z - a.z) * p.u;
+        y = CURB_H;
+        if (p.kind === 'wait' && p.cross) {
+          yaw = Math.atan2(-(p.cross.ex - p.cross.sx), -(p.cross.ez - p.cross.sz));
+        } else {
+          yaw = Math.atan2(-(b.x - a.x), -(b.z - a.z));
+        }
+      }
+
+      // ---------- 걷기 모션 ----------
+      var moving = p.kind !== 'wait';
+      var cyc = clockT * (5.0 + p.speed * 1.7) + p.phase;
+      p.px = x; p.pz = z; p.py = y; p.pyaw = yaw;
+      var sw = moving ? Math.sin(cyc) * 0.52 : Math.sin(clockT * 1.5 + p.phase) * 0.05;
+      var sw2 = moving ? Math.sin(cyc + Math.PI) * 0.52 : -sw;
+      var bob = moving ? Math.abs(Math.sin(cyc)) * 0.042 : 0;
+
+      pedP.set(x, y + bob, z);
+      pedQ.setFromEuler(pedE.set(0, yaw, 0));
+      var sc = p.scale || 1;
+      pedS.set(sc, sc, sc);
+      pedBase.compose(pedP, pedQ, pedS);
+
+      var put = pedPut;
+      put(pedMesh.torso, i, 0, 1.11, 0, 0, 0);
+      put(pedMesh.head, i, 0, 1.56, 0, 0, 0);
+      put(pedMesh.hair, i, 0, 1.585, -0.012, 0, 0, 1, 0.94, 1.02);
+      put(pedMesh.leg, i * 2, -0.115, 0.82, 0, sw, 0);
+      put(pedMesh.leg, i * 2 + 1, 0.115, 0.82, 0, sw2, 0);
+      put(pedMesh.arm, i * 2, -0.262, 1.345, 0, sw2 * 0.85, 0.13);
+      put(pedMesh.arm, i * 2 + 1, 0.262, 1.345, 0, sw * 0.85, -0.13);
     }
-    pedBody.instanceMatrix.needsUpdate = true;
-    pedHead.instanceMatrix.needsUpdate = true;
+    for (var nm in pedMesh) pedMesh[nm].instanceMatrix.needsUpdate = true;
   }
 
   /* ---------- 계기판 / 폰 ---------- */
@@ -3929,17 +4364,158 @@
       cockpit.position.y = -Math.abs(G.bob) * 0.5;
     }
     if (G.bodyG) {
-      G.bodyG.rotation.y = lerp(G.bodyG.rotation.y, G.steer * 0.055, 1 - Math.exp(-dt * 9));
+      // 우회전(steer>0)이면 카울 앞코가 오른쪽(+X)으로 → rotation.y는 음수
+      G.bodyG.rotation.y = lerp(G.bodyG.rotation.y, -G.steer * 0.055, 1 - Math.exp(-dt * 9));
       G.bodyG.rotation.z = lerp(G.bodyG.rotation.z, -G.lean * 0.06, 1 - Math.exp(-dt * 8));
     }
     if (G.barGroup) {
-      G.barGroup.rotation.y = lerp(G.barGroup.rotation.y, G.steer * 0.245, 1 - Math.exp(-dt * 10));
-      G.barGroup.rotation.z = lerp(G.barGroup.rotation.z, G.steer * 0.075, 1 - Math.exp(-dt * 9));
+      // 1인칭(-Z 전방)에서 좌회전은 위에서 볼 때 반시계(+Y).
+      // steer>0 = 우회전이므로 핸들은 -Y로 돌아 오른쪽 그립이 운전자 쪽으로 당겨진다.
+      G.barGroup.rotation.y = lerp(G.barGroup.rotation.y, -G.steer * 0.245, 1 - Math.exp(-dt * 10));
+      // 린 방향과 같은 쪽(오른쪽 그립이 아래로)으로 살짝 기울인다
+      G.barGroup.rotation.z = lerp(G.barGroup.rotation.z, -G.steer * 0.075, 1 - Math.exp(-dt * 9));
     }
     // 남산 타워 비콘 점멸
     if (towerBeaconMat) {
       var on = (clockT % 2) < 0.7;
       towerBeaconMat.color.setHex(on ? 0xff3b30 : 0x4a100e);
+    }
+  }
+
+  /* ---------- 픽업 / 배달 직접 건네주기 ---------- */
+  var uiHandOn = false;
+
+  function handoverCandidate() {
+    if (!G.running || G.paused || G.handover) return null;
+    if (G.mode !== 'toStore' && G.mode !== 'toCustomer') return null;
+    var o = G.order;
+    if (!o) return null;
+    var tgt = G.mode === 'toStore' ? o.store : o.dest;
+    var d = dist2(tgt.x, tgt.z, G.pos.x, G.pos.z);
+    if (d > 7.5 || Math.abs(G.speed) > 1.2) return null;
+    return { kind: G.mode === 'toStore' ? 'pickup' : 'delivery', d: d };
+  }
+
+  function refreshHandBtn() {
+    var c = handoverCandidate();
+    var on = !!c;
+    if (on !== uiHandOn) {
+      uiHandOn = on;
+      UI.handBtn.classList.toggle('on', on);
+    }
+    if (c) {
+      var tx = c.kind === 'pickup' ? '음식 받기' : '음식 건네주기';
+      if (UI.handTx.textContent !== tx) {
+        UI.handTx.textContent = tx;
+        UI.handSub.textContent = c.kind === 'pickup' ? '사장님께 봉투를 받으세요' : '고객에게 봉투를 건네세요';
+      }
+    }
+    return c;
+  }
+
+  function startHandover(kind) {
+    if (G.handover || !handRig) return false;
+    var c = handoverCandidate();
+    if (!c) return false;
+    var k = kind || c.kind;
+    G.handover = { kind: k, t: 0, handed: false };
+    G.speed = 0; G.throttle = 0; input.gas = false; input.brake = false;
+    handRig.visible = true;
+    rigBag.visible = k === 'delivery' && G.carry;
+    flyBag.visible = false;
+    if (UI.handBtn) UI.handBtn.classList.remove('on');
+    uiHandOn = false;
+    AU.blip(560, 0.07, 'triangle', 0.12, 0);
+    return true;
+  }
+
+  function updateHandover(dt) {
+    if (!handRig) return;
+    var t = clockT;
+    // NPC 대기 모션
+    if (npcPick && npcPick.visible) {
+      npcPick.position.y = 0.02 + Math.sin(t * 1.9) * 0.012;
+      var lift = G.handover && G.handover.kind === 'pickup' ? -0.15 : 0;
+      npcPick.userData.armL.rotation.x = -0.85 + lift;
+      npcPick.userData.armR.rotation.x = -0.85 + lift;
+    }
+    if (npcDrop && npcDrop.visible) {
+      npcDrop.position.y = 0.02 + Math.sin(t * 2.1 + 1) * 0.012;
+      var recv = G.handover && G.handover.kind === 'delivery' && G.handover.t < 1.05;
+      if (recv) {
+        npcDrop.userData.armL.rotation.x = -1.15;
+        npcDrop.userData.armR.rotation.x = -1.15;
+        npcDrop.userData.armL.rotation.z = 0.16;
+        npcDrop.userData.armR.rotation.z = -0.16;
+      } else {
+        // 반갑게 손 흔들기
+        npcDrop.userData.armR.rotation.x = 2.05 + Math.sin(t * 5.4) * 0.16;
+        npcDrop.userData.armR.rotation.z = -0.42 + Math.sin(t * 5.4 + 0.6) * 0.12;
+        npcDrop.userData.armL.rotation.x = Math.sin(t * 1.6) * 0.07;
+        npcDrop.userData.armL.rotation.z = 0.12;
+      }
+    }
+
+    if (!G.handover) {
+      handRig.visible = false;
+      return;
+    }
+    var h = G.handover;
+    h.t += G.handPause ? 0 : dt;
+    var k = h.t;
+
+    // 손 뻗기 / 거두기
+    var e = clamp(k / 0.42, 0, 1); e = e * e * (3 - 2 * e);
+    var back = clamp((k - 0.96) / 0.34, 0, 1); back = back * back * (3 - 2 * back);
+    var ext = e * (1 - back);
+    handRig.position.set(lerp(0.26, 0.02, ext), lerp(-0.62, 0.14, ext), lerp(-0.35, -0.60, ext));
+    handRig.rotation.x = lerp(-0.5, 0.02, ext);
+    handRig.visible = true;
+
+    var hp = handRig.userData.handPt.getWorldPosition(vTmpA);
+    var npc = h.kind === 'pickup' ? npcPick : npcDrop;
+    var nh = npc.userData.handPt.getWorldPosition(vTmpB);
+    var npcBag = npc.userData.bag;
+
+    if (h.kind === 'pickup') {
+      if (k < 0.52) {
+        npcBag.visible = true; flyBag.visible = false; rigBag.visible = false;
+      } else if (k < 0.96) {
+        if (!h.handed) { h.handed = true; npcBag.visible = false; flyBag.visible = true; AU.rustle(); }
+        var p = (k - 0.52) / 0.44;
+        flyBag.position.lerpVectors(nh, hp, p);
+        flyBag.position.y += Math.sin(p * Math.PI) * 0.14;
+      } else {
+        if (flyBag.visible) { flyBag.visible = false; rigBag.visible = true; AU.blip(1040, 0.09, 'triangle', 0.13, 0); }
+      }
+    } else {
+      if (k < 0.52) {
+        npcBag.visible = false; flyBag.visible = false; rigBag.visible = true;
+      } else if (k < 0.96) {
+        if (!h.handed) { h.handed = true; rigBag.visible = false; flyBag.visible = true; AU.rustle(); }
+        var p2 = (k - 0.52) / 0.44;
+        flyBag.position.lerpVectors(hp, nh, p2);
+        flyBag.position.y += Math.sin(p2 * Math.PI) * 0.13;
+      } else {
+        if (flyBag.visible) { flyBag.visible = false; npcBag.visible = true; AU.blip(1245, 0.1, 'triangle', 0.13, 0); }
+      }
+    }
+
+    if (k >= 1.42) {
+      var kind = h.kind;
+      G.handover = null;
+      handRig.visible = false;
+      flyBag.visible = false;
+      rigBag.visible = false;
+      if (kind === 'pickup') {
+        G.carry = true;
+        npcPick.visible = false;
+        completePickup();
+      } else {
+        G.carry = false;
+        npcDrop.visible = false;
+        completeDelivery();
+      }
     }
   }
 
@@ -3953,6 +4529,11 @@
     G.running = true;
     G.mode = 'idle';
     G.paused = false;
+    G.handover = null; G.carry = false;
+    if (npcPick) npcPick.visible = false;
+    if (npcDrop) npcDrop.visible = false;
+    if (handRig) handRig.visible = false;
+    if (flyBag) flyBag.visible = false;
     G.pos.x = 36.7; G.pos.z = 120; G.yaw = 0; G.speed = 0;
     G.lastViolation = 0;
     resetInterZones();
@@ -4059,6 +4640,7 @@
       }
     }
     updateCamera(dt);
+    updateHandover(dt);
     updateTurnLamps();
     if (cloudGroup && cloudGroup.visible) {
       for (var cg = 0; cg < cloudGroup.children.length; cg++) {
@@ -4256,18 +4838,97 @@
     setTurn: function (d) { return setTurn(d); },
     clearTurn: function () { clearTurn(); },
     lanes: function () { return laneStats; },
+    handleProbe: function () {
+      if (!G.barGroup || !camera) return null;
+      G.barGroup.updateWorldMatrix(true, false);
+      camera.updateWorldMatrix(true, false);
+      var lp = camera.worldToLocal(new THREE.Vector3(-0.245, 0, 0).applyMatrix4(G.barGroup.matrixWorld));
+      var rp = camera.worldToLocal(new THREE.Vector3(0.245, 0, 0).applyMatrix4(G.barGroup.matrixWorld));
+      var r3 = function (v) { return Math.round(v * 1000) / 1000; };
+      return {
+        steer: r3(G.steer), barY: r3(G.barGroup.rotation.y), barZ: r3(G.barGroup.rotation.z),
+        bodyY: r3(G.bodyG ? G.bodyG.rotation.y : 0), cockpitZ: r3(G.cockpit ? G.cockpit.rotation.z : 0),
+        leftGrip: { x: r3(lp.x), y: r3(lp.y), z: r3(lp.z) },   // 카메라 로컬: -z가 전방
+        rightGrip: { x: r3(rp.x), y: r3(rp.y), z: r3(rp.z) }
+      };
+    },
     limitFor: function (d) { return Math.round(125 + d / 4.0); },
     interZones: function () {
       var on = [];
       for (var i = 0; i < interList.length; i++) if (interList[i].inZone) on.push({ x: interList[i][0], z: interList[i][1], axis: interList[i].entryAxis, green: interList[i].enteredOnGreen });
       return on;
     },
-    sigConsts: function () { return { green: SIG_GREEN, yellow: SIG_YELLOW, cycle: SIG_CYCLE }; },
+    sigConsts: function () { return { green: SIG_GREEN, yellow: SIG_YELLOW, cycle: SIG_CYCLE, now: Math.round(clockT * 100) / 100 }; },
+    cars: function () {
+      var st = signalStates();
+      var r2 = function (v) { return Math.round(v * 100) / 100; };
+      var out = [];
+      for (var i = 0; i < carData.length; i++) {
+        var c = carData[i];
+        var light = c.axis === 'x' ? st.ew : st.ns;
+        var tgt = carSignalTarget(c);
+        out.push({
+          i: i, axis: c.axis, c: c.c, dir: c.dir, s: r2(c.s), v: r2(c.v), cruise: r2(c.speed),
+          light: light, stopS: tgt.stopS === null ? null : r2(tgt.stopS),
+          distStop: tgt.dist === null ? null : r2(tgt.dist), lead: r2(Math.min(carLeadGap(c), 999))
+        });
+      }
+      return out;
+    },
     timeBonusFor: function (left, limit) {
       var f = limit > 0 ? clamp(Math.max(0, left) / limit, 0, 1) : 0;
       return Math.round(f * 1600 / 10) * 10;
     },
     dists: function () { return storesArr.length; },
+    hand: function () {
+      var c = handoverCandidate();
+      return {
+        active: !!G.handover, t: G.handover ? Math.round(G.handover.t * 100) / 100 : 0,
+        kind: G.handover ? G.handover.kind : null, carry: !!G.carry,
+        btn: { on: !!UI.handBtn && UI.handBtn.classList.contains('on'), text: UI.handTx ? UI.handTx.textContent : null },
+        candidate: c ? c.kind : null, dist: c ? Math.round(c.d * 10) / 10 : null,
+        npcPick: npcPick ? { vis: npcPick.visible, x: Math.round(npcPick.position.x * 10) / 10, z: Math.round(npcPick.position.z * 10) / 10 } : null,
+        npcDrop: npcDrop ? { vis: npcDrop.visible, x: Math.round(npcDrop.position.x * 10) / 10, z: Math.round(npcDrop.position.z * 10) / 10 } : null,
+        rig: handRig ? { vis: handRig.visible, y: Math.round(handRig.position.y * 100) / 100,
+          x: Math.round(handRig.position.x * 100) / 100, z: Math.round(handRig.position.z * 100) / 100,
+          hand: handRig.userData.handPt ? handRig.userData.handPt.getWorldPosition(new THREE.Vector3()).toArray().map(function (n) { return Math.round(n * 100) / 100; }) : null,
+          camKids: camera.children.length } : null
+      };
+    },
+    pressHand: function () { return startHandover(); },
+    handAt: function (t) {   // 검증용: 건네주기 애니메이션을 특정 시점에 멈춰 렌더
+      if (!G.handover) return null;
+      G.handPause = true;
+      G.handover.t = t;
+      updateHandover(0.0001);
+      return { t: G.handover.t, kind: G.handover.kind };
+    },
+    handResume: function () { G.handPause = false; return true; },
+    // 검증용: 월드 시간을 수동으로 진행 (차량·보행자·신호만)
+    sim: function (seconds, step) {
+      var dt = step || 1 / 60;
+      var n = Math.min(9000, Math.max(1, Math.round((seconds || 1) / dt)));
+      for (var i = 0; i < n; i++) {
+        clockT += dt;
+        updateCars(dt);
+        updatePeds(dt);
+        updateSignals();
+      }
+      return { clock: Math.round(clockT * 100) / 100, steps: n };
+    },
+    peds: function () {
+      var r2 = function (v) { return Math.round(v * 100) / 100; };
+      var out = [];
+      for (var i = 0; i < pedData.length; i++) {
+        var p = pedData[i];
+        out.push({
+          i: i, kind: p.kind, x: r2(p.px || 0), z: r2(p.pz || 0), y: r2(p.py || 0),
+          yaw: r2(p.pyaw || 0), bi: p.bi, bj: p.bj, k: p.k, u: r2(p.u), cu: r2(p.cu),
+          axis: p.cross ? p.cross.axis : null, waitT: Math.round(p.waitT || 0)
+        });
+      }
+      return out;
+    },
     verifySignals: function () {
       var bad = [], minY = 99, maxY = -99, maxLat = 0;
       for (var i = 0; i < gantryHeads.length; i++) {
