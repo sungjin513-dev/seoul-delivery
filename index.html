@@ -236,6 +236,9 @@
     font-size:14px;font-weight:900;letter-spacing:-.3px;color:#fff;background:linear-gradient(180deg,#2b3547,#141a26);
     box-shadow:0 8px 18px rgba(15,20,32,.28);}
   #stNext:active{transform:scale(.97);}
+  #stFree{margin:0 16px;width:calc(100% - 32px);height:42px;border-radius:12px;font-family:inherit;font-size:13px;
+    font-weight:900;letter-spacing:-.3px;color:#08351f;background:linear-gradient(180deg,#a9f2cf,#46c993);border:1px solid #7fdcaa;}
+  #stFree:active{transform:scale(.97);}
 
   /* ---------- start ---------- */
   #start{position:absolute;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -274,6 +277,18 @@
     font-size:10.5px;gap:5px;letter-spacing:-.2px;}
   .chip.garage b{font-variant-numeric:tabular-nums;color:#ffd98a;font-weight:800;font-size:10.5px;}
   .chip.garage:active{transform:scale(.96);}
+  .chip.board{height:30px;margin-top:6px;padding:0 10px;display:flex;align-items:center;gap:5px;font-size:11px;letter-spacing:-.2px;
+    background:rgba(9,14,24,.86);}
+  .chip.board b{font-variant-numeric:tabular-nums;font-size:9.5px;font-weight:900;color:#0b1018;background:#ffd05a;
+    border-radius:6px;padding:1px 4px;line-height:1.2;}
+  .chip.board b:empty{display:none;}
+  .chip.board.ready{background:linear-gradient(180deg,#ff9a3d,#ff6a00);border-color:#ffc07a;color:#fff;
+    box-shadow:0 4px 14px rgba(255,120,20,.34);animation:boardPulse 1.9s ease-in-out infinite;}
+  .chip.board.ready b{background:rgba(0,0,0,.34);color:#ffe3b8;}
+  .chip.board.dim{opacity:.55;}
+  .chip.board:active{transform:scale(.95);}
+  @keyframes boardPulse{0%,100%{box-shadow:0 4px 14px rgba(255,120,20,.34);}
+    50%{box-shadow:0 0 0 4px rgba(255,150,40,.22),0 6px 20px rgba(255,120,20,.55);}}
   #garageWrap{position:absolute;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;
     background:rgba(5,9,16,.62);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);pointer-events:auto;
     padding:calc(var(--sat) + 10px) 10px calc(var(--sab) + 10px);}
@@ -394,10 +409,16 @@
   .bdFoot{padding:10px 12px 4px;display:flex;gap:8px;}
   .bdFoot button{height:46px;border-radius:13px;border:none;font-family:inherit;font-size:14px;font-weight:900;letter-spacing:-.3px;}
   .bdFoot button:active{transform:scale(.96);}
-  #bdSkip{flex:.72;background:rgba(255,255,255,.09);color:#c2cddd;border:1px solid rgba(255,255,255,.14);}
-  #bdAccept{flex:1.28;background:linear-gradient(180deg,#ff8c2b,#ff6a00);color:#fff;box-shadow:0 8px 20px rgba(255,106,0,.34);}
+  #bdSkip{flex:.66;background:rgba(255,255,255,.09);color:#c2cddd;border:1px solid rgba(255,255,255,.14);font-size:12.5px;}
+  #bdAccept{flex:1.2;background:linear-gradient(180deg,#ff8c2b,#ff6a00);color:#fff;box-shadow:0 8px 20px rgba(255,106,0,.34);}
+  #bdFree{flex:.86;background:linear-gradient(180deg,#49dcab,#12a06b);color:#04241a;font-size:12.5px;
+    box-shadow:0 8px 18px rgba(20,180,120,.30);}
   .bdTip{padding:8px 14px 12px;font-size:9.5px;color:#7d8ca1;text-align:center;letter-spacing:-.1px;line-height:1.45;}
   .bdTip b{color:#8fd2ff;font-weight:800;}
+  .bdRight{display:flex;align-items:center;gap:6px;flex:none;}
+  .bdFreeX{pointer-events:auto;width:30px;height:30px;flex:none;border-radius:10px;border:1px solid rgba(255,255,255,.16);
+    background:rgba(255,255,255,.08);color:#dbe4f0;font-family:inherit;font-size:13px;font-weight:900;line-height:1;padding:0;}
+  .bdFreeX:active{transform:scale(.94);}
 
   /* ---------- 배고픔 게이지 ---------- */
   .pill.hunger{gap:5px;padding:0 8px;}
@@ -508,6 +529,7 @@
         <div class="mapWrap" id="mapWrap"><canvas id="mini" width="216" height="216"></canvas><div id="mapDist">—</div></div>
         <button class="chip mode on" id="mapModeBtn">🧭 내비</button>
         <button class="chip garage" id="garageBtn">🛠 차고<b id="garageBal">₩0</b></button>
+        <button class="chip board" id="boardBtn">📱 배차판<b id="boardCnt">3</b></button>
       </div>
     </div>
 
@@ -584,15 +606,17 @@
     <h1>서울 <em>배달</em> 라이더</h1>
     <p class="sub">남산타워가 보이는 서울의 밤거리,<br>1인칭 오토바이로 오늘의 콜을 달려요.</p>
     <div class="guide">
+      <div><b>📱 배차판</b>언제든 열어 콜을 골라 잡아요</div>
       <div><b>◀ ▶ 좌우</b>핸들을 꺾어 코너를 돌아요</div>
       <div><b>악셀 / 브레이크</b>누르고 있어 가속·감속</div>
       <div><b>빵빵</b>경적을 울려요</div>
       <div><b>◀ ▶ 깜빡이</b>회전 전에 켜면 매너 보너스</div>
-      <div><b>정지선</b>빨간불이면 정지선 앞 정차</div>
+      <div><b>정지선</b>빨간불이면 정지선 앞 정차 · 우회전은 가능</div>
+      <div><b>⛽ 🏪</b>주유소·편의점은 언제든 들러요</div>
       <div><b>PC</b>WASD 이동 · Q/E 깜빡이 · Space 경적</div>
     </div>
     <div id="startStats"></div>
-    <button id="startBtn">배달 시작하기</button>
+    <button id="startBtn">🛵 자유 주행 시작하기</button>
     <button id="garageBtnStart" class="ghostBtn">🛠 내 차고 · 탈것 상점</button>
     <div class="tip">신호 지키고 깜빡이 켜고 음식을 따뜻하게 — 보너스가 올라가요</div>
   </div>
@@ -675,7 +699,8 @@
     fuel: 100, hunger: 100, fuelEmptyWarned: false, hungerWarned: false,
     bumps: 0, refuels: 0, meals: 0, hornPeds: 0, hornCars: 0,
     offers: [], selOffer: 0, mapMode: 'nav', nearStation: null, nearMart: null,
-    eating: false, mealPrevPaused: false, mapOpen: false, mapPrevPaused: false
+    eating: false, mealPrevPaused: false, mapOpen: false, mapPrevPaused: false,
+    freeTime: 0, lastFreeHud: 0, boardFrom: null
   };
 
   var STATS_KEY = 'seoulDeliveryStats.v1';
@@ -764,6 +789,7 @@
     hungerPill: $('#hungerPill'), hungerFill: $('#hungerFill'), hungerVal: $('#hungerVal'),
     mapWrap: $('#mapWrap'), bigMap: $('#bigMap'), bigMapWrap: $('#bigMapWrap'),
     callWrap: null, callCard: null, settleWrap: null,
+    boardBtn: $('#boardBtn'), boardCnt: $('#boardCnt'), garageBtn: $('#garageBtn'), garageBal: $('#garageBal'),
     flash: $('#flash'), bootErr: $('#bootErr'), vig: $('#vig')
   };
   var miniCtx = UI.mini.getContext('2d');
@@ -3631,7 +3657,7 @@
     var tip = $('#bdTip');
     if (tip) tip.innerHTML = G.tod === 'rain'
       ? '☔ 지금은 비 · <b>우천 할증 +₩800</b>이 정산에 붙어요'
-      : '콜을 골라 수락하면 가게로 출발해요 · 음식 상태에 따라 팁이 달라져요';
+      : '콜을 골라 수락하면 가게로 출발해요 · <b>🏍 자유 주행</b>으로 닫아도 📱 배차판으로 언제든 다시 열 수 있어요';
   }
 
   function showCall() {
@@ -3639,13 +3665,17 @@
     if (G.selOffer >= G.offers.length) G.selOffer = 0;
     renderBoard();
     $('#boardWrap').classList.remove('hidden');
+    G.boardFrom = (G.mode === 'idle') ? 'idle' : G.mode;
     G.mode = 'offer';
     G.paused = true;
     G.speed = 0;
     G.throttle = 0;
+    input.gas = false; input.brake = false;
     UI.fuelBtn.classList.remove('on'); fuelBtnOn = false;
     UI.mealBtn.classList.remove('on'); mealBtnOn = false;
+    if (UI.stopHint) UI.stopHint.classList.remove('on');
     drawMini();
+    updateBoardBtn();
     AU.call();
   }
 
@@ -3679,22 +3709,115 @@
     if (UI.mapDist) UI.mapDist.textContent = '가게 ' + Math.round(dist2(o.store.x, o.store.z, G.pos.x, G.pos.z)) + 'm';
     AU.blip(780, 0.12, 'triangle', 0.2, 0);
     toast('콜 수락!', withRo(o.store.name) + ' 이동 · ' + o.tagLabel, 1800);
+    updateBoardBtn();
     return true;
   }
 
   function acceptCall() { return acceptOffer(G.selOffer); }
 
+  /* 새로고침: 배차판을 닫지 않고 콜만 새로 뽑는다(자유 주행과 충돌하지 않게) */
   function declineCall() {
-    $('#boardWrap').classList.add('hidden');
-    G.paused = false;
-    G.offers = [];
+    if (G.mode !== 'offer') return false;
+    makeOffers();
+    renderBoard();
+    AU.blip(660, 0.07, 'sine', 0.1, 0);
+    toast('콜 새로고침', '새 콜 ' + G.offers.length + '건', 1100);
+    return true;
+  }
+
+  /* ---------- 자유 주행(프리 라이드) ---------- */
+  function freeRideActive() {
+    return !!(G.running && G.mode === 'idle' && !G.paused &&
+      !G.garageOpen && !G.mapOpen && !G.eating && !G.handover);
+  }
+
+  function setFreeHud() {
+    setOrderHUD('자유 주행중', '서울 시내를 자유롭게 달려요', '⛽ 주유소 · 🏪 편의점 이용 가능');
+    UI.orderTimer.textContent = fmtClock(G.freeTime || 0);
+    UI.orderTimer.classList.remove('late');
+    if (UI.orderDist) UI.orderDist.textContent = '🏍 주행 중';
+  }
+
+  /* 자유 주행으로 진입: 배차판/정산 패널을 닫고 콜 없이 달리게 한다 */
+  function enterFreeRide(opts) {
+    opts = opts || {};
+    var bw = $('#boardWrap'); if (bw) bw.classList.add('hidden');
+    var sw = $('#settleWrap'); if (sw) sw.classList.add('hidden');
     G.mode = 'idle';
-    toast('배차판 새로고침…', '다른 콜을 찾는 중', 1200);
-    setTimeout(function () {
-      if (!G.running || G.mode !== 'idle' || G.garageOpen || G.mapOpen || G.eating) return;
-      makeOffers();
-      showCall();
-    }, 850);
+    G.paused = false;
+    G.boardFrom = null;
+    G.order = null;
+    G.pending = null;
+    G.carry = false;
+    G.food = 100;
+    G.speed = 0; G.throttle = 0; G.steer = 0;
+    G.handover = null; G.handPause = false;
+    input.gas = input.brake = input.left = input.right = false;
+    G.freeTime = 0;
+    G.freeAt = G.time;
+    if (beaconPick) beaconPick.grp.visible = false;
+    if (beaconDrop) beaconDrop.grp.visible = false;
+    if (npcPick) npcPick.visible = false;
+    if (npcDrop) npcDrop.visible = false;
+    if (rigBag) rigBag.visible = false;
+    if (flyBag) flyBag.visible = false;
+    if (handRig) handRig.visible = false;
+    if (G.turn !== 0) clearTurn();
+    if (UI.stopHint) UI.stopHint.classList.remove('on');
+    UI.handBtn.classList.remove('on'); uiHandOn = false;
+    UI.fuelBtn.classList.remove('on'); fuelBtnOn = false;
+    UI.mealBtn.classList.remove('on'); mealBtnOn = false;
+    if (!G.offers || !G.offers.length) makeOffers();
+    setFreeHud();
+    if (UI.mapDist) UI.mapDist.textContent = '자유 주행';
+    refreshServiceBtns(); updateHUD(); drawMini(); updateBoardBtn();
+    if (!opts.silent) {
+      toast('자유 주행', '서울 거리를 마음대로 · 📱 배차판으로 콜 받기', 2400);
+      AU.blip(880, 0.1, 'sine', 0.14, 0);
+    }
+    return true;
+  }
+
+  /* 📱 배차판: 자유 주행 중에도 언제든 콜 목록을 연다 */
+  function openCallBoard() {
+    if (!G.running) return false;
+    if (G.mode === 'offer') return true;
+    if (G.mode === 'settle') {
+      toast('정산 중이에요', '정산을 마치면 새 콜을 받을 수 있어요', 1500);
+      return false;
+    }
+    if (G.mode === 'toStore' || G.mode === 'toCustomer') {
+      toast('배달 중이에요', '콜을 마치면 새 콜을 받을 수 있어요', 1500);
+      return false;
+    }
+    if (G.garageOpen || G.mapOpen || G.eating || G.handover) return false;
+    G.speed = 0; G.throttle = 0;
+    input.gas = false; input.brake = false;
+    if (!G.offers || !G.offers.length) makeOffers();
+    showCall();
+    return true;
+  }
+
+  function closeBoard() {
+    if (G.mode !== 'offer') return false;
+    enterFreeRide();
+    return true;
+  }
+
+  function freeRideFromSettle() {
+    if (G.mode !== 'settle') return false;
+    enterFreeRide();
+    return true;
+  }
+
+  function updateBoardBtn() {
+    if (!UI.boardBtn) return;
+    var free = (G.mode === 'idle' && G.running);
+    var n = (G.offers || []).length;
+    var cnt = (free || G.mode === 'offer') ? (n ? String(n) : '') : '';
+    if (UI.boardCnt && UI.boardCnt.textContent !== cnt) UI.boardCnt.textContent = cnt;
+    UI.boardBtn.classList.toggle('ready', free && !G.paused);
+    UI.boardBtn.classList.toggle('dim', !free && G.mode !== 'offer');
   }
 
   function setOrderHUD(phase, store, dest) {
@@ -3820,8 +3943,9 @@
     UI.orderTimer.textContent = '--:--';
     G.pending = null;
     makeOffers();
+    updateBoardBtn();
     setTimeout(function () {
-      if (!G.running || G.garageOpen || G.mapOpen || G.eating) return;
+      if (!G.running || G.mode !== 'idle' || G.garageOpen || G.mapOpen || G.eating || G.handover) return;
       showCall();
     }, 420);
   }
@@ -3987,6 +4111,7 @@
     });
 
     UI.startBtn.addEventListener('click', startGame);
+    if (UI.boardBtn) UI.boardBtn.addEventListener('click', function (e) { e.stopPropagation(); openCallBoard(); });
 
     window.addEventListener('keydown', function (e) {
       var k = e.key;
@@ -4022,9 +4147,9 @@
     board.id = 'boardWrap';
     board.innerHTML = [
       '<div id="board">',
-      '  <div class="bdHead"><div><div class="k">CALL BOARD · 배차판</div><div class="h">콜을 골라 잡으세요</div></div><div class="cnt" id="bdCount">3건</div></div>',
+      '  <div class="bdHead"><div><div class="k">CALL BOARD · 배차판</div><div class="h">콜을 골라 잡으세요</div></div><div class="bdRight"><div class="cnt" id="bdCount">3건</div><button class="bdFreeX" id="bdFreeX" aria-label="자유 주행으로 나가기">✕</button></div></div>',
       '  <div class="bdList" id="bdList"></div>',
-      '  <div class="bdFoot"><button id="bdSkip">새로고침</button><button id="bdAccept">수락</button></div>',
+      '  <div class="bdFoot"><button id="bdFree">🏍 자유 주행</button><button id="bdSkip">새로고침</button><button id="bdAccept">수락</button></div>',
       '  <div class="bdTip" id="bdTip"></div>',
       '</div>'
     ].join('\n');
@@ -4035,6 +4160,8 @@
     });
     $('#bdAccept').addEventListener('click', function () { acceptCall(); });
     $('#bdSkip').addEventListener('click', declineCall);
+    $('#bdFree').addEventListener('click', function () { closeBoard(); });
+    $('#bdFreeX').addEventListener('click', function () { closeBoard(); });
 
     var settle = document.createElement('div');
     settle.className = 'sheetWrap hidden';
@@ -4055,12 +4182,14 @@
       '    <div class="stFoot"><div><span>보유 금액</span><b id="stMoney"></b></div><div><span>완료</span><b id="stCount"></b></div><div><span>평점</span><b id="stAvg"></b></div></div>',
       '  </div>',
       '  <button id="stGarage">🛠 차고 열기 · 새 탈것 사기</button>',
+      '  <button id="stFree">🏍 자유 주행 · 콜 없이 달리기</button>',
       '  <button id="stNext">다음 콜 받기</button>',
       '</div>'
     ].join('\n');
     $('#app').insertBefore(settle, $('#start'));
 
     $('#stNext').addEventListener('click', nextCall);
+    $('#stFree').addEventListener('click', freeRideFromSettle);
   }
 
   /* ---------- 차고 / 탈것 상점 ---------- */
@@ -4303,13 +4432,18 @@
   function hit(kind, strength) {
     if (G.hitCooldown > 0) return;
     G.hitCooldown = 0.45;
-    var frag = (G.order && G.order.fragile) || 1;
-    var dmg = (kind === 'car' ? 6 : 5) * (frag > 1.4 ? 1.5 : 1);
-    G.food = clamp(G.food - dmg, 0, 100);
-    if (G.order) G.order.collisions++;
     G.shake = Math.min(0.09, 0.035 + strength * 0.02);
     G.bobV -= 0.9;
     AU.crash();
+    // 자유 주행(콜 없음): 음식이 없으니 충돌 피해 없이 경고만
+    if (!G.order) {
+      warn(kind === 'car' ? '차량 접촉!' : '연석 접촉!', '자유 주행 중 · 안전하게 달려요', 1300);
+      return;
+    }
+    var frag = G.order.fragile || 1;
+    var dmg = (kind === 'car' ? 6 : 5) * (frag > 1.4 ? 1.5 : 1);
+    G.food = clamp(G.food - dmg, 0, 100);
+    G.order.collisions++;
     warn(kind === 'car' ? '차량 충돌!' : '연석 충돌!', '음식이 흔들렸어요 · 음식 상태 -' + Math.round(dmg), 1400);
   }
 
@@ -4317,6 +4451,14 @@
   function bumpPass(b, kmh, silent) {
     var spd = (kmh === undefined ? Math.abs(G.speed) * 3.6 : kmh);
     if (!silent) G.bumps = (G.bumps || 0) + 1;
+    if (!G.order) {
+      // 자유 주행: 과속방지턱은 덜컹임과 경고만
+      G.bobV -= spd < 19 ? 0.14 : 0.62;
+      G.shake = Math.max(G.shake, spd < 19 ? 0.014 : 0.04);
+      AU.thud(spd < 19 ? 0.32 : 0.95);
+      if (!silent && spd >= 19) toast('덜컹!', '과속방지턱 · 천천히 넘으면 부드러워요', 1000);
+      return { slow: spd < 19, dmg: 0, kmh: Math.round(spd) };
+    }
     var frag = (G.order && G.order.fragile) || 1;
     if (spd < 19) {
       G.bobV -= 0.14;
@@ -4742,6 +4884,14 @@
         UI.stopHint.classList.remove('on');
       }
       checkSignalViolation();
+    } else if (G.mode === 'idle' && !G.paused) {
+      // 자유 주행: 콜이 없어도 신호를 계속 판정(위반은 경고만) · 주행 시간 누적
+      G.freeTime = (G.freeTime || 0) + dt;
+      if (G.time - G.lastFreeHud > 0.25) {
+        G.lastFreeHud = G.time;
+        UI.orderTimer.textContent = fmtClock(G.freeTime || 0);
+      }
+      checkSignalViolation();
     }
 
     // 비컨 애니메이션
@@ -4777,6 +4927,12 @@
       var d = dist2(tgt.x, tgt.z, G.pos.x, G.pos.z);
       UI.orderDist.textContent = '▲ ' + Math.round(d) + 'm';
       if (UI.mapDist) UI.mapDist.textContent = (G.mode === 'toStore' ? '가게 ' : '고객 ') + Math.round(d) + 'm';
+    } else if (G.mode === 'idle' && G.running) {
+      // 자유 주행: 가까운 주유소 거리와 주행 시간을 보여준다
+      if (UI.mapDist) UI.mapDist.textContent = '자유 주행';
+      var nsFree = nearestStation();
+      if (UI.orderDist) UI.orderDist.textContent = nsFree ? '⛽ ' + Math.round(nsFree.d) + 'm' : '⛽ –';
+      if (UI.orderTimer) UI.orderTimer.textContent = fmtClock(G.freeTime || 0);
     } else if (G.mode !== 'offer') {
       if (UI.mapDist) UI.mapDist.textContent = '—';
     }
@@ -4796,6 +4952,7 @@
     if (toastT > 0) { toastT -= 0.1; if (toastT <= 0) UI.toast.classList.remove('on'); }
     if (warnT > 0) { warnT -= 0.1; if (warnT <= 0) UI.warn.classList.remove('on'); }
     updateSignalBadge();
+    updateBoardBtn();
   }
 
   /* ---------- 전방 신호 배지 ---------- */
@@ -4825,7 +4982,7 @@
 
   function updateSignalBadge() {
     if (!UI.sigBadge) return;
-    var driving = G.running && !G.paused && (G.mode === 'toStore' || G.mode === 'toCustomer');
+    var driving = G.running && !G.paused && (G.mode === 'toStore' || G.mode === 'toCustomer' || G.mode === 'idle');
     // 교차로 안(회전 포함)에서는 지나가는 중인 신호를 엉뚱한 축으로 띄우지 않는다
     var info = (driving && !inAnyInterZone()) ? signalHudInfo() : null;
     if (!info) {
@@ -4835,7 +4992,7 @@
     }
     var cls = info.state === 0 ? 'red' : (info.state === 1 ? 'yel' : 'grn');
     var txt, total;
-    if (info.state === 0) { txt = '전방 적신호 · 정지선 앞 정차'; total = SIG_GREEN + SIG_YELLOW; }
+    if (info.state === 0) { txt = '적신호 · 우회전만 가능'; total = SIG_GREEN + SIG_YELLOW; }
     else if (info.state === 1) { txt = '곧 적신호 · 정지 준비'; total = SIG_YELLOW; }
     else { txt = '전방 초록불 · 진행 가능'; total = SIG_GREEN; }
     UI.sigBadge.classList.add('show', cls);
@@ -4870,7 +5027,37 @@
     for (var i = 0; i < interList.length; i++) {
       var it = interList[i];
       it.inZone = false; it.enteredOnGreen = null; it.entryAxis = null;
+      it.entryPos = null; it.entryYaw = null; it.entrySpeed = 0;
     }
+  }
+
+  /* 적신호 우회전 허용: 진입 시 진행 방향의 오른쪽(+90도)으로 빠져나가면 통과로 본다.
+     직진·좌회전은 기존대로 위반. */
+  var RIGHT_ON_RED_COS = 0.55;      // 이탈 변위가 오른쪽으로 33도 이상이면 우회전
+  var RIGHT_TURN_MIN = 0.52;        // 진입 대비 +30도
+  var RIGHT_TURN_MAX = 2.60;        // +149도 (직각 우회전 + 손떨림 여유)
+
+  function wrapRad(d) {
+    while (d > Math.PI) d -= Math.PI * 2;
+    while (d < -Math.PI) d += Math.PI * 2;
+    return d;
+  }
+
+  function judgeInterExit(it) {
+    if (it.enteredOnGreen) return 'green';
+    if (!it.entryPos) return 'skip';
+    if ((it.entrySpeed || 0) < 3) return 'skip';      // 정지선에서 살짝 밀린 경우는 관대하게
+    var dx = G.pos.x - it.entryPos.x, dz = G.pos.z - it.entryPos.z;
+    var len = Math.sqrt(dx * dx + dz * dz);
+    if (len < 4) return 'skip';
+    var yaw = (typeof it.entryYaw === 'number') ? it.entryYaw : G.yaw;
+    var dYaw = wrapRad(G.yaw - yaw);
+    var fx = Math.sin(yaw), fz = -Math.cos(yaw);
+    var rx = -fz, rz = fx;                                   // 진행 방향의 오른쪽
+    var rightPart = (dx * rx + dz * rz) / len;
+    // 우회전 판정: 진입 대비 오른쪽으로 크게 돌았거나, 이탈 변위가 오른쪽으로 치우쳤을 때
+    if ((dYaw > RIGHT_TURN_MIN && dYaw < RIGHT_TURN_MAX) || rightPart > RIGHT_ON_RED_COS) return 'right';
+    return 'violation';
   }
 
   function checkSignalViolation() {
@@ -4879,13 +5066,37 @@
       var it = interList[i];
       var ax = Math.abs(G.pos.x - it[0]), az = Math.abs(G.pos.z - it[1]);
       if (it.inZone) {
-        // 교차로 내부: 회전으로 축이 바뀌어도 추가 판정 없음. 완전히 이탈해야 해제.
-        if (ax > INTER_EXIT_HALF || az > INTER_EXIT_HALF) { it.inZone = false; it.enteredOnGreen = null; it.entryAxis = null; }
+        // 교차로 내부: 회전으로 축이 바뀌어도 추가 판정 없음. 완전히 이탈할 때 방향으로 판정.
+        if (ax > INTER_EXIT_HALF || az > INTER_EXIT_HALF) {
+          var verdict = judgeInterExit(it);
+          it.inZone = false; it.enteredOnGreen = null; it.entryAxis = null;
+          it.entryPos = null; it.entryYaw = null; it.entrySpeed = 0;
+          if (verdict === 'violation') {
+            if (!canDriveNow()) continue;
+            if (G.time - G.lastViolation < 2.5) continue;
+            if (!G.order) {
+              if (G.mode === 'idle') {
+                G.lastViolation = G.time;
+                AU.violation();
+                warn('신호위반!', '자유 주행 중에도 신호를 지켜주세요', 1500);
+              }
+              continue;
+            }
+            G.lastViolation = G.time;
+            G.order.violations++;
+            G.food = clamp(G.food - 4, 0, 100);
+            AU.violation();
+            warn('신호위반!', '별점 -0.4 · 안전 배달 보너스 -350원', 2000);
+          } else if (verdict === 'right' && G.order && !G.order.rightOnRedShown) {
+            G.order.rightOnRedShown = true;
+            toast('우회전 통과!', '적신호에도 우회전은 가능해요', 1400);
+          }
+        }
         continue;
       }
       if (ax >= INTER_ENTER_HALF || az >= INTER_ENTER_HALF) continue;
 
-      // 새로 진입: 진입 축(교차로 중심에서 들어온 쪽)과 그때의 신호를 래치
+      // 새로 진입: 진입 축·위치·진행 방향·속도를 래치하고, 위반 여부는 이탈 때 방향으로 판정
       var axis = az >= ax ? 'ns' : 'ew';
       if (!states) states = signalStates();
       var st = states[axis];
@@ -4893,16 +5104,15 @@
       it.entryAxis = axis;
       it.enteredOnGreen = (st !== 0);   // 초록(2)·황색(1) 진입은 무조건 정상 통과
       it.enteredAt = G.time;
-      if (st !== 0) continue;
-      if (!G.order) continue;
-      if (Math.abs(G.speed) < 3) continue;              // 정지선에서 살짝 밀린 경우는 관대하게
-      if (G.time - G.lastViolation < 2.5) continue;
-      G.lastViolation = G.time;
-      G.order.violations++;
-      G.food = clamp(G.food - 4, 0, 100);
-      AU.violation();
-      warn('신호위반!', '별점 -0.4 · 안전 배달 보너스 -350원', 2000);
+      it.entryPos = { x: G.pos.x, z: G.pos.z };
+      it.entryYaw = G.yaw;
+      it.entrySpeed = Math.abs(G.speed);
     }
+  }
+
+  // 신호위반 판정을 할 수 있는 주행 상태인가 (배달 중·자유 주행)
+  function canDriveNow() {
+    return !!(G.running && !G.paused && !G.handover && (G.mode === 'toStore' || G.mode === 'toCustomer' || G.mode === 'idle'));
   }
 
   // 지금 교차로를 통과(진입~이탈)하는 중인가 — 전방 신호 배지 오표시 방지용
@@ -5844,9 +6054,10 @@
     updateCamera(0.016);
     refreshStatsUI();
     makeOffers();
-    setTimeout(function () {
-      if (G.running && G.mode === 'idle') showCall();
-    }, 320);
+    // 처음부터 바로 달릴 수 있게 자유 주행으로 시작
+    G.freeTime = 0;
+    enterFreeRide({ silent: true });
+    toast('자유 주행 시작!', '바로 달려보세요 · 📱 배차판에서 콜을 받아요', 3200);
   }
 
   /* ---------- 초기화 / 루프 ---------- */
@@ -6018,7 +6229,9 @@
         vehicle: G.vehicle, gaugeMax: G.gaugeMax,
         fuel: Math.round(G.fuel), hunger: Math.round(G.hunger), mapMode: G.mapMode,
         offers: (G.offers || []).length, sel: G.selOffer,
-        bumps: G.bumps || 0, refuels: G.refuels || 0, meals: G.meals || 0
+        bumps: G.bumps || 0, refuels: G.refuels || 0, meals: G.meals || 0,
+        freeRide: freeRideActive(), freeTime: Math.round((G.freeTime || 0) * 10) / 10,
+        boardBtn: UI.boardBtn ? { text: UI.boardBtn.textContent, ready: UI.boardBtn.classList.contains('ready') } : null
       };
     },
     start: function () { startGame(); },
@@ -6032,7 +6245,27 @@
       G.speed = 0; G.throttle = 0; input.gas = false;
       updateCamera(0.016);
     },
+    // 검증용: 게임 로직을 정해진 스텝으로 직접 진행 (렌더 없이 물리·판정만)
+    tick: function (seconds, step) {
+      var dt = step || 1 / 30;
+      var n = Math.max(1, Math.round((seconds || 1) / dt));
+      for (var i = 0; i < n; i++) { clockT += dt; updateGame(dt); updateHandover(dt); updateHornFx(dt); }
+      return {
+        time: Math.round(G.time * 10) / 10, clock: Math.round(clockT * 100) / 100,
+        kmh: Math.round(Math.abs(G.speed) * 3.6), mode: G.mode, paused: G.paused,
+        pos: { x: Math.round(G.pos.x * 10) / 10, z: Math.round(G.pos.z * 10) / 10 },
+        yaw: Math.round(G.yaw * 100) / 100
+      };
+    },
     drive: function (v) { G.speed = v; updateCamera(0.016); },
+    place: function (x, z, yaw, speed) {
+      G.pos.x = x; G.pos.z = z;
+      if (typeof yaw === 'number') G.yaw = yaw;
+      G.speed = speed || 0; G.throttle = 0;
+      input.gas = false;
+      updateCamera(0.016);
+      return { x: Math.round(G.pos.x * 10) / 10, z: Math.round(G.pos.z * 10) / 10, yaw: Math.round(G.yaw * 100) / 100, speed: G.speed };
+    },
     setFood: function (v) { G.food = clamp(v, 0, 100); if (G.order) G.order.food = G.food; updateHUD(); drawSpeedo(); drawPhone(); },
     setTodOnly: function (t) { setTOD(t); },
     goPickupView: function (offset) {
@@ -6393,7 +6626,39 @@
     },
     selectOffer: function (i) { selectOffer(i); return G.selOffer; },
     acceptOffer: function (i) { return acceptOffer(i); },
-    openBoard: function () { makeOffers(); showCall(); return G.offers.length; },
+    openBoard: function () { return openCallBoard(); },
+    closeBoard: function () { return closeBoard(); },
+    clickBoard: function () { if (UI.boardBtn) { UI.boardBtn.click(); return true; } return false; },
+    clickBoardFree: function () {
+      var b = $('#bdFree'); if (!b) return false; b.click(); return true;
+    },
+    clickBoardFreeX: function () {
+      var b = $('#bdFreeX'); if (!b) return false; b.click(); return true;
+    },
+    freeFromSettle: function () {
+      var b = $('#stFree'); if (!b) return false; b.click(); return true;
+    },
+    boardTexts: function () {
+      return {
+        head: $('#board') && $('#board') ? $('#board').textContent : null,
+        free: $('#bdFree') ? $('#bdFree').textContent : null,
+        skip: $('#bdSkip') ? $('#bdSkip').textContent : null,
+        accept: $('#bdAccept') ? $('#bdAccept').textContent : null
+      };
+    },
+    setCycle: function (t) { clockT = (t === undefined ? 0 : t); updateSignals(); return Math.round(clockT * 100) / 100; },
+    resetOrderFlags: function () {
+      if (G.order) { G.order.violations = 0; G.order.collisions = 0; G.order.rightOnRedShown = false; }
+      G.lastViolation = -99;
+      resetInterZones();
+      G.hitCooldown = 0;
+      return true;
+    },
+    interZones: function () {
+      var on = [];
+      for (var i = 0; i < interList.length; i++) if (interList[i].inZone) on.push({ x: interList[i][0], z: interList[i][1], axis: interList[i].entryAxis, green: interList[i].enteredOnGreen });
+      return on;
+    },
     horn: function () { AU.hornOn(); return hornBlast(); },
     hornOff: function () { AU.hornOff(); return true; },
     hornAudio: function () {
